@@ -1,4 +1,4 @@
-import {createIcon} from '@chakra-ui/icon';
+import {createIcon} from '@chakra-ui/react';
 
 export const DownloadIcon = createIcon({
   viewBox: '0 0 20 20',

@@ -1,4 +1,4 @@
-import {defineStyleConfig} from '@chakra-ui/react';
+import {defineRecipe} from '@chakra-ui/react';
 
 const oneLine = {
   textOverflow: 'ellipsis',
@@ -6,8 +6,8 @@ const oneLine = {
   whiteSpace: 'nowrap',
 };
 
-export const Text = defineStyleConfig({
-  baseStyle: {
+export const textRecipe = defineRecipe({
+  base: {
     fontSize: 'md',
     fontWeight: '400',
     lineHeight: '5.5',
@@ -158,7 +158,10 @@ export const Text = defineStyleConfig({
       color: 'brand.500',
     },
   },
-  defaultProps: {
+  defaultVariants: {
     variant: 'md',
   },
 });
+
+// Export with old name for backward compatibility
+export const Text = textRecipe;

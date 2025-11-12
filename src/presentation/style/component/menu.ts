@@ -1,16 +1,17 @@
-import {defineStyleConfig} from '@chakra-ui/react';
+import {defineSlotRecipe} from '@chakra-ui/react';
 
-export const Menu = defineStyleConfig({
-  baseStyle: {
+export const menuRecipe = defineSlotRecipe({
+  slots: ['trigger', 'content', 'item'],
+  base: {
     // define the part you're going to style
-    button: {
+    trigger: {
       // this will style the MenuButton component
       fontWeight: '400',
       _hover: {
         bg: 'gray.100',
       },
     },
-    list: {
+    content: {
       // this will style the MenuList component
       py: '1',
       w: 'actionDialog.w',
@@ -27,3 +28,6 @@ export const Menu = defineStyleConfig({
     },
   },
 });
+
+// Export with old name for backward compatibility
+export const Menu = menuRecipe;

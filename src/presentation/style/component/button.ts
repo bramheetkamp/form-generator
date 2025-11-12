@@ -1,7 +1,7 @@
-import {defineStyleConfig} from '@chakra-ui/react';
+import {defineRecipe} from '@chakra-ui/react';
 
-export const Button = defineStyleConfig({
-  baseStyle: {
+export const buttonRecipe = defineRecipe({
+  base: {
     borderRadius: '2',
     paddingX: '2',
     paddingY: '3',
@@ -223,3 +223,6 @@ export const Button = defineStyleConfig({
     },
   },
 });
+
+// Export with old name for backward compatibility
+export const Button = buttonRecipe;

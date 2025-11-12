@@ -1,6 +1,6 @@
 import type {AppProps} from 'next/app';
 import {ChakraProvider} from '@chakra-ui/react';
-import {theme} from '@/presentation/style/theme';
+import {system} from '@/presentation/style/system';
 import {Asap} from 'next/font/google';
 import {Provider} from 'react-redux';
 import React from 'react';
@@ -17,7 +17,7 @@ function App({Component, ...rest}: AppProps) {
   return (
     <main className={asap.className}>
       <Provider store={store}>
-        <ChakraProvider resetCSS theme={theme}>
+        <ChakraProvider value={system}>
           {/* Inject font as variable into css so it can also be used in portals */}
           {/* https://github.com/chakra-ui/chakra-ui/issues/7157#issuecomment-1531379718 */}
           <Global

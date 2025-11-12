@@ -1,4 +1,4 @@
-import {createIcon} from '@chakra-ui/icon';
+import {createIcon} from '@chakra-ui/react';
 
 /**
  * https://www.figma.com/file/T4sPmR1bDjemGLB4uVqDHY/Heroicons-(Community)?type=design&node-id=8-3823&t=0mOTYgx9aucwoJ2q-0

@@ -1,10 +1,6 @@
-import {createMultiStyleConfigHelpers} from '@chakra-ui/react';
-import {inputAnatomy} from '@chakra-ui/anatomy';
+import {defineSlotRecipe} from '@chakra-ui/react';
 
-const {definePartsStyle, defineMultiStyleConfig} =
-  createMultiStyleConfigHelpers(inputAnatomy.keys);
-
-const textField = definePartsStyle({
+const textFieldStyle = {
   field: {
     py: '3',
     px: '4',
@@ -32,19 +28,19 @@ const textField = definePartsStyle({
       border: '1px solid var(--chakra-colors-brand-500)',
     },
   },
-});
+};
 
-const searchField = definePartsStyle({
+const searchFieldStyle = {
   field: {
-    ...textField.field,
+    ...textFieldStyle.field,
     minHeight: '11',
     height: '11',
   },
-});
+};
 
-const small = definePartsStyle({
+const smallStyle = {
   field: {
-    ...textField.field,
+    ...textFieldStyle.field,
     h: '8',
     minH: 'unset',
     boxShadow: 'unset',
@@ -54,11 +50,11 @@ const small = definePartsStyle({
       border: '1px solid var(--chakra-colors-brand-500)',
     },
   },
-});
+};
 
-const singleDigit = definePartsStyle({
+const singleDigitStyle = {
   field: {
-    ...textField.field,
+    ...textFieldStyle.field,
     px: '3',
     py: '4',
     fontSize: 'xxl',
@@ -70,16 +66,23 @@ const singleDigit = definePartsStyle({
       border: '2px solid var(--chakra-colors-brand-500)',
     },
   },
-});
+};
 
-export const Input = defineMultiStyleConfig({
+export const inputRecipe = defineSlotRecipe({
+  slots: ['field', 'addon', 'element'],
+  base: {},
   variants: {
-    textField,
-    searchField,
-    singleDigit,
-    small,
+    variant: {
+      textField: textFieldStyle,
+      searchField: searchFieldStyle,
+      singleDigit: singleDigitStyle,
+      small: smallStyle,
+    },
   },
-  defaultProps: {
+  defaultVariants: {
     variant: 'textField',
   },
 });
+
+// Export with old name for backward compatibility
+export const Input = inputRecipe;

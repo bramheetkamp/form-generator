@@ -1,18 +1,18 @@
-import {switchAnatomy} from '@chakra-ui/anatomy';
-import {createMultiStyleConfigHelpers} from '@chakra-ui/react';
+import {defineSlotRecipe} from '@chakra-ui/react';
 
 // https://chakra-ui.com/docs/components/switch/theming
 
-const {definePartsStyle, defineMultiStyleConfig} =
-  createMultiStyleConfigHelpers(switchAnatomy.keys);
-
-const baseStyle = definePartsStyle({
-  track: {
-    bg: 'gray.500',
-    _checked: {
-      bg: 'green.400',
+export const switchRecipe = defineSlotRecipe({
+  slots: ['root', 'track', 'thumb', 'label'],
+  base: {
+    track: {
+      bg: 'gray.500',
+      _checked: {
+        bg: 'green.400',
+      },
     },
   },
 });
 
-export const Switch = defineMultiStyleConfig({baseStyle});
+// Export with old name for backward compatibility
+export const Switch = switchRecipe;
