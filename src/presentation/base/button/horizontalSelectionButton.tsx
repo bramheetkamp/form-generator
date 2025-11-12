@@ -51,20 +51,22 @@ export const HorizontalSelectionButton = memo(
               disabled={startButton.disabled}
               minW={'unset'}
               boxSize={'5'}
-              icon={<PreviousYearIcon boxSize={'5'} />}
               aria-label={startButton.ariaLabel}
-            />
+            >
+              <PreviousYearIcon boxSize={'5'} />
+            </IconButton>
           )}
           <IconButton
             onClick={leftButton.onClick}
             disabled={leftButton.disabled}
             minW={'unset'}
             boxSize={'5'}
-            icon={<PreviousMonthIcon boxSize={'5'} />}
             aria-label={leftButton.ariaLabel}
-          />
+          >
+            <PreviousMonthIcon boxSize={'5'} />
+          </IconButton>
 
-          <Text w={'full'} noOfLines={1}>
+          <Text w={'full'} lineClamp={1}>
             {text}
           </Text>
 
@@ -73,18 +75,20 @@ export const HorizontalSelectionButton = memo(
             boxSize={'5'}
             onClick={rightButton.onClick}
             disabled={rightButton.disabled}
-            icon={<NextMonthIcon boxSize={'5'} />}
             aria-label={rightButton.ariaLabel}
-          />
+          >
+            <NextMonthIcon boxSize={'5'} />
+          </IconButton>
           {endButton && (
             <IconButton
               minW={'unset'}
               boxSize={'5'}
               onClick={endButton.onClick}
               disabled={endButton.disabled}
-              icon={<NextYearIcon boxSize={'5'} />}
               aria-label={endButton.ariaLabel}
-            />
+            >
+              <NextYearIcon boxSize={'5'} />
+            </IconButton>
           )}
         </Flex>
       </Box>

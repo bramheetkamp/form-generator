@@ -1,8 +1,7 @@
 import {
   Flex,
   FlexProps,
-  FormControl,
-  FormErrorMessage,
+  Field,
   FormHelperText,
   FormLabel,
   HStack,
@@ -105,7 +104,7 @@ const createTextField = ({
   };
 
   return (
-    <FormControl isInvalid={!!errorText}>
+    <Field.Root invalid={!!errorText}>
       <Flex direction={'column'} {...rest}>
         {label && (
           <HStack w={'full'} pb={'1'} px={'2'}>
@@ -151,7 +150,7 @@ const createTextField = ({
           {getElement()}
         </InputGroup>
         {errorText ? (
-          <FormErrorMessage
+          <Field.ErrorText
             px={'2'}
             mt={'1'}
             w={'full'}
@@ -161,7 +160,7 @@ const createTextField = ({
             letterSpacing={'0.01em'}
           >
             {errorText}
-          </FormErrorMessage>
+          </Field.ErrorText>
         ) : (
           hint && (
             <HStack>
@@ -180,7 +179,7 @@ const createTextField = ({
           )
         )}
       </Flex>
-    </FormControl>
+    </Field.Root>
   );
 };
 

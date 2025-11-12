@@ -1,8 +1,7 @@
 import {
   Box,
   BoxProps,
-  FormControl,
-  FormErrorMessage,
+  Field,
   FormHelperText,
   HStack,
   Spacer,
@@ -215,7 +214,7 @@ function createDropdownField<T>(props: DropdownFieldProps<T>) {
 
   const height = Math.min((items?.length ?? 0) * 60, 300);
   return (
-    <FormControl isInvalid={!!errorText} w={w || width || 'full'}>
+    <Field.Root invalid={!!errorText} w={w || width || 'full'}>
       <Box
         w={w || width || 'full'}
         borderRadius={isSmallVariant ? '1' : '1.5'}
@@ -432,7 +431,7 @@ function createDropdownField<T>(props: DropdownFieldProps<T>) {
       </Box>
 
       {errorText ? (
-        <FormErrorMessage
+        <Field.ErrorText
           px={'2'}
           mt={'1'}
           w={'full'}
@@ -442,7 +441,7 @@ function createDropdownField<T>(props: DropdownFieldProps<T>) {
           letterSpacing={'0.01em'}
         >
           {errorText}
-        </FormErrorMessage>
+        </Field.ErrorText>
       ) : (
         hint && (
           <HStack>
@@ -460,7 +459,7 @@ function createDropdownField<T>(props: DropdownFieldProps<T>) {
           </HStack>
         )
       )}
-    </FormControl>
+    </Field.Root>
   );
 }
 

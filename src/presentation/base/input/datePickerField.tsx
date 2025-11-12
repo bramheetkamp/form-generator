@@ -1,9 +1,7 @@
 import React, {memo, useState} from 'react';
 import {
   Flex,
-  FormControl,
-  FormControlProps,
-  FormErrorMessage,
+  Field,
 } from '@chakra-ui/react';
 import 'react-datepicker/dist/react-datepicker.css';
 import ReactDatePicker, {
@@ -24,7 +22,7 @@ import {HorizontalSelectionButton} from '@/presentation/base/button/horizontalSe
 import {capitalizeFirstLetter} from '@/utils/string';
 import {DateFormat, formatDate} from '@/presentation/utils/date';
 
-interface Props extends FormControlProps {
+interface Props {
   isClearable?: boolean;
   onDateChanged?: (date?: Date) => void;
   date?: Date;
@@ -35,6 +33,11 @@ interface Props extends FormControlProps {
   placeholder?: string;
   isSmallVariant?: boolean;
   showCalendarIcon?: boolean;
+  w?: string;
+  width?: string;
+  isDisabled?: boolean;
+  onBlur?: () => void;
+  [key: string]: any;
 }
 
 export const DatePickerField = memo(
@@ -59,8 +62,8 @@ export const DatePickerField = memo(
     const {t} = useTranslation('common');
 
     return (
-      <FormControl
-        isInvalid={!!errorText}
+      <Field.Root
+        invalid={!!errorText}
         w={w || width ? w || width : 'full'}
         {...props}
       >
@@ -205,7 +208,7 @@ export const DatePickerField = memo(
           )}
         </Flex>
 
-        <FormErrorMessage
+        <Field.ErrorText
           px={'2'}
           mt={'1'}
           w={'full'}
@@ -215,8 +218,8 @@ export const DatePickerField = memo(
           letterSpacing={'0.01em'}
         >
           {errorText}
-        </FormErrorMessage>
-      </FormControl>
+        </Field.ErrorText>
+      </Field.Root>
     );
   }
 );

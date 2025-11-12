@@ -1,6 +1,5 @@
 import {
-  FormControl,
-  FormErrorMessage,
+  Field,
   Stack,
   StackProps,
   useRadioGroup,
@@ -44,7 +43,7 @@ function createRadioField<T>({
   const group = getRootProps();
 
   return (
-    <FormControl isInvalid={!!errorText}>
+    <Field.Root invalid={!!errorText}>
       <Stack
         {...group}
         spacing={'6'}
@@ -75,7 +74,7 @@ function createRadioField<T>({
           );
         })}
       </Stack>
-      <FormErrorMessage
+      <Field.ErrorText
         px={'2'}
         mt={'1'}
         w={'full'}
@@ -85,7 +84,7 @@ function createRadioField<T>({
         letterSpacing={'0.01em'}
       >
         {errorText}
-      </FormErrorMessage>
-    </FormControl>
+      </Field.ErrorText>
+    </Field.Root>
   );
 }

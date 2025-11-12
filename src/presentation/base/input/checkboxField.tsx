@@ -1,38 +1,50 @@
-import {Checkbox, CheckboxProps, Text} from '@chakra-ui/react';
+import {Checkbox, Text} from '@chakra-ui/react';
 import {
   CheckedIcon,
   DisabledCheckedIcon,
 } from '@/presentation/base/icon/checked';
 import React, {memo} from 'react';
 
-interface Props extends CheckboxProps {
+interface Props {
   title?: string;
+  disabled?: boolean;
+  checked?: boolean;
+  invalid?: boolean;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  [key: string]: any;
 }
 
 const createCheckboxField = ({
   title,
-  isDisabled,
-  isChecked,
-  isInvalid,
+  disabled,
+  checked,
+  invalid,
   ...rest
 }: Props) => {
   const icon =
-    isDisabled && isChecked ? (
+    disabled && checked ? (
       <CheckboxIcon as={DisabledCheckedIcon} />
-    ) : isChecked ? (
+    ) : checked ? (
       <CheckboxIcon as={CheckedIcon} />
     ) : undefined;
 
   return (
-    <Checkbox
-      icon={icon}
-      isDisabled={isDisabled}
-      isChecked={isChecked}
-      isInvalid={isInvalid}
+    <Checkbox.Root
+      disabled={disabled}
+      checked={checked}
+      invalid={invalid}
       {...rest}
     >
-      {title && <Text variant={isInvalid ? 'error' : undefined}>{title}</Text>}
-    </Checkbox>
+      <Checkbox.HiddenInput />
+      <Checkbox.Control>
+        {icon || <Checkbox.Indicator />}
+      </Checkbox.Control>
+      {title && (
+        <Checkbox.Label>
+          <Text css={invalid ? {color: 'red.700'} : undefined}>{title}</Text>
+        </Checkbox.Label>
+      )}
+    </Checkbox.Root>
   );
 };
 

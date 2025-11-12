@@ -1,6 +1,5 @@
 import {
-  FormControl,
-  FormErrorMessage,
+  Field,
   Textarea,
   TextareaProps,
 } from '@chakra-ui/react';
@@ -12,7 +11,7 @@ interface Props extends TextareaProps {
 
 export const TextareaField = ({errorText, ...rest}: Props) => {
   return (
-    <FormControl isInvalid={!!errorText}>
+    <Field.Root invalid={!!errorText}>
       <Textarea
         rows={7}
         p={'2'}
@@ -27,7 +26,7 @@ export const TextareaField = ({errorText, ...rest}: Props) => {
         }}
         {...rest}
       />
-      <FormErrorMessage
+      <Field.ErrorText
         px={'2'}
         mt={'1'}
         w={'full'}
@@ -37,7 +36,7 @@ export const TextareaField = ({errorText, ...rest}: Props) => {
         letterSpacing={'0.01em'}
       >
         {errorText}
-      </FormErrorMessage>
-    </FormControl>
+      </Field.ErrorText>
+    </Field.Root>
   );
 };
