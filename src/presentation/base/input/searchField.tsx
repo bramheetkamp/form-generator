@@ -17,7 +17,6 @@ interface Props extends InputProps {
 
 export const SearchField = memo(
   ({w, width, value, onValueChanged, ...rest}: Props) => {
-    const {t} = useTranslation('common');
     return (
       <InputGroup w={w || width}>
         <Input
@@ -35,7 +34,7 @@ export const SearchField = memo(
             onClick={() => {
               onValueChanged('');
             }}
-            label={t('clearInput')}
+            label={'clearInput'}
             mr={'2'}
             icon={<CloseIcon />}
           />

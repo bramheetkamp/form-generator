@@ -7,7 +7,6 @@ import {useRouter} from 'next/router';
 import {Routes} from './routes';
 
 export const NotFoundPage = () => {
-  const {t} = useTranslation('common');
   const router = useRouter();
 
   return (
@@ -22,9 +21,9 @@ export const NotFoundPage = () => {
       <PageHeader />
       <NotFoundIcon mt={'notFound.mt'} />
       <Text mt={'16'} variant={'xl'} fontWeight={'600'} textColor={'brand.700'}>
-        {t('notFound.title')}
+        {'notFound.title'}
       </Text>
-      <Text mt={'2'}>{t('notFound.description')}</Text>
+      <Text mt={'2'}>{'notFound.description'}</Text>
       <Button
         variant={'primary'}
         onClick={event => {
@@ -33,7 +32,7 @@ export const NotFoundPage = () => {
         }}
         mt={'8'}
       >
-        {t('backToStart')}
+        {'backToStart'}
       </Button>
     </Flex>
   );

@@ -56,7 +56,6 @@ export const DatePickerField = memo(
     ...props
   }: Props) => {
     const [isFocus, setFocus] = useState(false);
-    const {t} = useTranslation('common');
 
     return (
       <FormControl
@@ -168,7 +167,7 @@ export const DatePickerField = memo(
             autoComplete={'off'}
             dateFormat={showTimeInput ? 'dd-MM-yyyy HH:mm' : 'dd-MM-yyyy'}
             placeholderText={placeholder ?? 'dd-mm-jjjj'}
-            timeInputLabel={`${t('time')}:`}
+            timeInputLabel={`${'time'}:`}
             maxDate={maxDate}
             showTimeInput={showTimeInput}
             renderCustomHeader={props => <DatePickerHeader {...props} />}
@@ -195,7 +194,7 @@ export const DatePickerField = memo(
               onClick={() => {
                 onDateChanged?.(undefined);
               }}
-              label={t('clearInput')}
+              label={'clearInput'}
               mr={'2'}
               icon={<CloseIcon />}
             />
@@ -233,8 +232,6 @@ const DatePickerHeader = memo(
     prevYearButtonDisabled,
     nextYearButtonDisabled,
   }: ReactDatePickerCustomHeaderProps) => {
-    const {t} = useTranslation('common');
-
     return (
       <HorizontalSelectionButton
         px={'2'}
@@ -243,22 +240,22 @@ const DatePickerHeader = memo(
         leftButton={{
           onClick: decreaseMonth,
           disabled: prevMonthButtonDisabled,
-          ariaLabel: t('previousMonth'),
+          ariaLabel: 'previousMonth',
         }}
         rightButton={{
           onClick: increaseMonth,
           disabled: nextMonthButtonDisabled,
-          ariaLabel: t('nextMonth'),
+          ariaLabel: 'nextMonth',
         }}
         startButton={{
           onClick: decreaseYear,
           disabled: prevYearButtonDisabled,
-          ariaLabel: t('previousYear'),
+          ariaLabel: 'previousYear',
         }}
         endButton={{
           onClick: increaseYear,
           disabled: nextYearButtonDisabled,
-          ariaLabel: t('nextYear'),
+          ariaLabel: 'nextYear',
         }}
       />
     );

@@ -182,7 +182,7 @@ export function daysFromNow(
     resultString = 'Vandaag';
   } else {
     resultString = `${roundedDiff < 0 ? '-' : ''}${absoluteDiff} ${
-      absoluteDiff > 1 ? t('days').toLowerCase() : t('day').toLowerCase()
+      absoluteDiff > 1 ? 'days'.toLowerCase() : 'day'.toLowerCase()
     }`;
   }
 

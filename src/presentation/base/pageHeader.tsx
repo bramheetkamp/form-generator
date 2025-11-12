@@ -13,8 +13,6 @@ export interface PageHeaderProps {
 
 export const PageHeader = memo(
   ({title, showBackButton, onBackButtonClicked}: PageHeaderProps) => {
-    const {t} = useTranslation('common');
-
     return (
       <>
         <Box w={'full'} bg={'brand.700'} boxShadow={'md'}>
@@ -32,7 +30,7 @@ export const PageHeader = memo(
               <Flex alignItems={'center'} gap={3} flex={'1'} minW={0}>
                 {showBackButton && title && (
                   <Button
-                    aria-label={t('common:back')}
+                    aria-label={'common:back'}
                     variant={'tertiaryLight'}
                     _hover={{bg: 'whiteAlpha.200'}}
                     onClick={() => onBackButtonClicked?.()}
@@ -45,7 +43,7 @@ export const PageHeader = memo(
                       fontWeight={'500'}
                       noOfLines={1}
                     >
-                      {t('back')}
+                      {'back'}
                     </Text>
                   </Button>
                 )}
@@ -93,7 +91,7 @@ export const PageHeader = memo(
                     _hover={{bg: 'whiteAlpha.200'}}
                   >
                     <Text fontWeight={'500'} color={'white'} fontSize={'md'}>
-                      {t('help')}
+                      {'help'}
                     </Text>
                   </Button>
                 </Link>
@@ -135,7 +133,7 @@ export const PageHeader = memo(
               <Box flex={'1'} minW={0}>
                 {showBackButton && title ? (
                   <Button
-                    aria-label={t('common:back')}
+                    aria-label={'common:back'}
                     variant={'tertiaryLight'}
                     _hover={{bg: 'whiteAlpha.200'}}
                     onClick={() => onBackButtonClicked?.()}
@@ -176,7 +174,7 @@ export const PageHeader = memo(
                   _hover={{bg: 'whiteAlpha.200'}}
                 >
                   <Text fontWeight={'500'} color={'white'} fontSize={'sm'}>
-                    {t('help')}
+                    {'help'}
                   </Text>
                 </Button>
               </Link>

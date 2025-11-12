@@ -30,7 +30,6 @@ import {setIntakeVLOSData} from '@/domain/store/slices/formData';
 
 export const FormIntakeVLOSPage = () => {
   const router = useRouter();
-  const {t} = useTranslation('form');
   const dispatch = useAppDispatch();
 
   // State voor Links/Rechts/Beide selectie (default: Beide)
@@ -183,7 +182,7 @@ export const FormIntakeVLOSPage = () => {
 
   return (
     <BaseLayout
-      title={t('intakeVlos')}
+      title={'intakeVlos'}
       showBackButton={true}
       onBackButtonClicked={() => router.back()}
     >
@@ -198,7 +197,7 @@ export const FormIntakeVLOSPage = () => {
         {/* Links/Rechts/Beide selectie */}
         <Box>
           <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
-            {t('side')}
+            {'side'}
           </Text>
           <Flex
             gap={{base: 4, md: 6}}
@@ -213,9 +212,9 @@ export const FormIntakeVLOSPage = () => {
           >
             <RadioGroup value={side} onChange={setSide}>
               <Stack direction="row" spacing={6}>
-                <Radio value="beide">{t('beide')}</Radio>
-                <Radio value="links">{t('links')}</Radio>
-                <Radio value="rechts">{t('rechts')}</Radio>
+                <Radio value="beide">{'beide'}</Radio>
+                <Radio value="links">{'links'}</Radio>
+                <Radio value="rechts">{'rechts'}</Radio>
               </Stack>
             </RadioGroup>
           </Flex>
@@ -226,7 +225,7 @@ export const FormIntakeVLOSPage = () => {
         {/* Schachthoogte */}
         <Box>
           <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
-            {t('schachthoogte')}
+            {'schachthoogte'}
           </Text>
           <Flex
             gap={{base: 4, md: 6}}
@@ -240,7 +239,7 @@ export const FormIntakeVLOSPage = () => {
           >
             {showLinks && (
               <FormControl>
-                <FormLabel fontSize="sm">{t('links')}</FormLabel>
+                <FormLabel fontSize="sm">{'links'}</FormLabel>
                 <Input
                   type="number"
                   placeholder="cm"
@@ -252,7 +251,7 @@ export const FormIntakeVLOSPage = () => {
             )}
             {showRechts && (
               <FormControl>
-                <FormLabel fontSize="sm">{t('rechts')}</FormLabel>
+                <FormLabel fontSize="sm">{'rechts'}</FormLabel>
                 <Input
                   type="number"
                   placeholder="cm"
@@ -270,7 +269,7 @@ export const FormIntakeVLOSPage = () => {
         {/* Openstand Schacht */}
         <Box>
           <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
-            {t('openstandSchacht')}
+            {'openstandSchacht'}
           </Text>
           <Flex
             gap={{base: 4, md: 6}}
@@ -302,7 +301,7 @@ export const FormIntakeVLOSPage = () => {
         {/* Omsluiting */}
         <Box>
           <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
-            {t('omsluiting')}
+            {'omsluiting'}
           </Text>
           <Flex
             gap={6}
@@ -316,7 +315,7 @@ export const FormIntakeVLOSPage = () => {
             {showLinks && (
               <Box flex={1}>
                 <FormLabel fontSize="sm" mb={3}>
-                  {t('links')}
+                  {'links'}
                 </FormLabel>
                 <Stack spacing={3}>
                   {OMSLUITING_OPTIONS.map((optie: OmsluitingOption) => (
@@ -380,7 +379,7 @@ export const FormIntakeVLOSPage = () => {
                 pt={{base: showLinks ? 4 : 0, md: 0}}
               >
                 <FormLabel fontSize="sm" mb={3}>
-                  {t('rechts')}
+                  {'rechts'}
                 </FormLabel>
                 <Stack spacing={3}>
                   {OMSLUITING_OPTIONS.map((optie: OmsluitingOption) => (
@@ -457,15 +456,15 @@ export const FormIntakeVLOSPage = () => {
             {showLinks && (
               <Box flex={1}>
                 <Text fontSize="sm" fontWeight="semibold" mb={2}>
-                  {t('links')}
+                  {'links'}
                 </Text>
                 <RadioGroup
                   value={supplementschoringLinksEnabled}
                   onChange={setSupplementschoringLinksEnabled}
                 >
                   <Stack direction="row" spacing={4} mb={3}>
-                    <Radio value="ja">{t('ja')}</Radio>
-                    <Radio value="nee">{t('nee')}</Radio>
+                    <Radio value="ja">{'ja'}</Radio>
+                    <Radio value="nee">{'nee'}</Radio>
                   </Stack>
                 </RadioGroup>
                 {supplementschoringLinksEnabled === 'ja' && (
@@ -496,15 +495,15 @@ export const FormIntakeVLOSPage = () => {
                 pt={{base: showLinks ? 4 : 0, md: 0}}
               >
                 <Text fontSize="sm" fontWeight="semibold" mb={2}>
-                  {t('rechts')}
+                  {'rechts'}
                 </Text>
                 <RadioGroup
                   value={supplementschoringRechtsEnabled}
                   onChange={setSupplementschoringRechtsEnabled}
                 >
                   <Stack direction="row" spacing={4} mb={3}>
-                    <Radio value="ja">{t('ja')}</Radio>
-                    <Radio value="nee">{t('nee')}</Radio>
+                    <Radio value="ja">{'ja'}</Radio>
+                    <Radio value="nee">{'nee'}</Radio>
                   </Stack>
                 </RadioGroup>
                 {supplementschoringRechtsEnabled === 'ja' && (
@@ -550,8 +549,8 @@ export const FormIntakeVLOSPage = () => {
               onChange={setZoolverstijvingEnabled}
             >
               <Stack direction="row" spacing={4}>
-                <Radio value="ja">{t('ja')}</Radio>
-                <Radio value="nee">{t('nee')}</Radio>
+                <Radio value="ja">{'ja'}</Radio>
+                <Radio value="nee">{'nee'}</Radio>
               </Stack>
             </RadioGroup>
 
@@ -565,7 +564,7 @@ export const FormIntakeVLOSPage = () => {
                     isChecked={zoolverstijvingLinks}
                     onChange={e => setZoolverstijvingLinks(e.target.checked)}
                   >
-                    {t('links')}
+                    {'links'}
                   </Checkbox>
                 )}
                 {showRechts && (
@@ -573,7 +572,7 @@ export const FormIntakeVLOSPage = () => {
                     isChecked={zoolverstijvingRechts}
                     onChange={e => setZoolverstijvingRechts(e.target.checked)}
                   >
-                    {t('rechts')}
+                    {'rechts'}
                   </Checkbox>
                 )}
               </Stack>
@@ -678,8 +677,8 @@ export const FormIntakeVLOSPage = () => {
               onChange={setTongpolsterEnabled}
             >
               <Stack direction={{base: 'column', sm: 'row'}} spacing={6}>
-                <Radio value="ja">{t('ja')} (plastazote 3mm)</Radio>
-                <Radio value="nee">{t('nee')}</Radio>
+                <Radio value="ja">{'ja'} (plastazote 3mm)</Radio>
+                <Radio value="nee">{'nee'}</Radio>
               </Stack>
             </RadioGroup>
           </Flex>
@@ -707,8 +706,8 @@ export const FormIntakeVLOSPage = () => {
               onChange={setTongVaststikkenEnabled}
             >
               <Stack direction="row" spacing={6}>
-                <Radio value="ja">{t('ja')}</Radio>
-                <Radio value="nee">{t('nee')}</Radio>
+                <Radio value="ja">{'ja'}</Radio>
+                <Radio value="nee">{'nee'}</Radio>
               </Stack>
             </RadioGroup>
           </Flex>
@@ -833,15 +832,15 @@ export const FormIntakeVLOSPage = () => {
             {showLinks && (
               <Box flex={1}>
                 <Text fontSize="sm" fontWeight="semibold" mb={2}>
-                  {t('links')}
+                  {'links'}
                 </Text>
                 <RadioGroup
                   value={hakschoringLinksEnabled}
                   onChange={setHakschoringLinksEnabled}
                 >
                   <Stack direction="row" spacing={4} mb={3}>
-                    <Radio value="ja">{t('ja')}</Radio>
-                    <Radio value="nee">{t('nee')}</Radio>
+                    <Radio value="ja">{'ja'}</Radio>
+                    <Radio value="nee">{'nee'}</Radio>
                   </Stack>
                 </RadioGroup>
                 {hakschoringLinksEnabled === 'ja' && (
@@ -867,15 +866,15 @@ export const FormIntakeVLOSPage = () => {
                 pt={{base: showLinks ? 4 : 0, md: 0}}
               >
                 <Text fontSize="sm" fontWeight="semibold" mb={2}>
-                  {t('rechts')}
+                  {'rechts'}
                 </Text>
                 <RadioGroup
                   value={hakschoringRechtsEnabled}
                   onChange={setHakschoringRechtsEnabled}
                 >
                   <Stack direction="row" spacing={4} mb={3}>
-                    <Radio value="ja">{t('ja')}</Radio>
-                    <Radio value="nee">{t('nee')}</Radio>
+                    <Radio value="ja">{'ja'}</Radio>
+                    <Radio value="nee">{'nee'}</Radio>
                   </Stack>
                 </RadioGroup>
                 {hakschoringRechtsEnabled === 'ja' && (
@@ -916,15 +915,15 @@ export const FormIntakeVLOSPage = () => {
                 {showLinks && (
                   <Box>
                     <Text fontSize="sm" fontWeight="semibold" mb={2}>
-                      {t('links')}
+                      {'links'}
                     </Text>
                     <RadioGroup
                       value={hakafrondingLinksEnabled}
                       onChange={setHakafrondingLinksEnabled}
                     >
                       <Stack direction="row" spacing={4} mb={3}>
-                        <Radio value="ja">{t('ja')}</Radio>
-                        <Radio value="nee">{t('nee')}</Radio>
+                        <Radio value="ja">{'ja'}</Radio>
+                        <Radio value="nee">{'nee'}</Radio>
                       </Stack>
                     </RadioGroup>
                     {hakafrondingLinksEnabled === 'ja' && (
@@ -958,15 +957,15 @@ export const FormIntakeVLOSPage = () => {
                 {showRechts && (
                   <Box>
                     <Text fontSize="sm" fontWeight="semibold" mb={2}>
-                      {t('rechts')}
+                      {'rechts'}
                     </Text>
                     <RadioGroup
                       value={hakafrondingRechtsEnabled}
                       onChange={setHakafrondingRechtsEnabled}
                     >
                       <Stack direction="row" spacing={4} mb={3}>
-                        <Radio value="ja">{t('ja')}</Radio>
-                        <Radio value="nee">{t('nee')}</Radio>
+                        <Radio value="ja">{'ja'}</Radio>
+                        <Radio value="nee">{'nee'}</Radio>
                       </Stack>
                     </RadioGroup>
                     {hakafrondingRechtsEnabled === 'ja' && (
@@ -1045,10 +1044,10 @@ export const FormIntakeVLOSPage = () => {
         {/* Bijzonderheden */}
         <Box>
           <Text fontWeight="bold" mb={4} fontSize={{base: 'md', md: 'lg'}}>
-            {t('bijzonderheden')}
+            {'bijzonderheden'}
           </Text>
           <Textarea
-            placeholder={t('bijzonderhedenPlaceholder')}
+            placeholder={'bijzonderhedenPlaceholder'}
             value={bijzonderheden}
             onChange={e => setBijzonderheden(e.target.value)}
             minH={{base: '100px', md: '120px'}}

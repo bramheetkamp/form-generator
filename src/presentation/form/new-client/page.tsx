@@ -26,7 +26,6 @@ import {setClientData} from '@/domain/store/slices/formData';
 
 export const FormNewClientPage = () => {
   const router = useRouter();
-  const {t} = useTranslation('form');
   const dispatch = useAppDispatch();
 
   // State voor client data
@@ -88,7 +87,7 @@ export const FormNewClientPage = () => {
 
   return (
     <BaseLayout
-      title={t('new-client')}
+      title={'new-client'}
       showBackButton={true}
       onBackButtonClicked={() => router.back()}
     >
@@ -121,7 +120,7 @@ export const FormNewClientPage = () => {
                 items={practitioners}
                 item={practitionerId}
                 onItemSelected={item => setPractitionerId(item?.value)}
-                placeholder={t('choosePractitioner')}
+                placeholder={'choosePractitioner'}
                 isSmallVariant
               />
             </FormControl>
