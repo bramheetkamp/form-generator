@@ -4,6 +4,7 @@
   "old-client": "Oude klant"
   ,
   "intakeOsavlos": "Intakeformulier OSA/VLOS",
+  "intakeVlos": "Intakeformulier VLOS",
   "basiscodes": "Basiscodes",
   "omschrijving": "Omschrijving",
   "proefschoen": "Proefschoen",
@@ -59,5 +60,18 @@
   "hielenPolsteren": "Hielen polsteren ptt/mouse",
   "polsterTRuit": "Polster T/Ruit",
   "bijzonderheden": "Bijzonderheden",
-  "bijzonderhedenPlaceholder": "Bijzonderheden..."
+  "bijzonderhedenPlaceholder": "Bijzonderheden...",
+  "side": "Links/Rechts/Beide",
+  "beide": "Beide",
+  "links": "Links",
+  "rechts": "Rechts",
+  "schachthoogte": "Schachthoogte",
+  "omsluiting": "Omsluiting",
+  "ja": "Ja",
+  "nee": "Nee",
+  "type": "Type",
+  "selectType": "Selecteer type",
+  "lateraal": "Lateraal",
+  "mediaal": "Mediaal",
+  "millimetersLower": "millimeters"
 }

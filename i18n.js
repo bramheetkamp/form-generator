@@ -15,5 +15,7 @@ module.exports = {
     // Forms
     '/new-client': ['form'],
     '/old-client': ['form'],
+    '/intake-osa-vlos': ['form'],
+    '/intake-vlos': ['form'],
   },
 };
