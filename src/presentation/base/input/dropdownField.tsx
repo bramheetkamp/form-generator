@@ -99,7 +99,6 @@ export type DropdownFieldProps<T> =
 function createDropdownField<T>(props: DropdownFieldProps<T>) {
   const [isFocus, setFocus] = useState(false);
   const chakraTheme = useTheme();
-  const {t} = useTranslation('common');
 
   const {
     type,
@@ -108,7 +107,7 @@ function createDropdownField<T>(props: DropdownFieldProps<T>) {
     isDisabled,
     errorText,
     fieldBackgroundColor,
-    placeholder = t('selects'),
+    placeholder = 'selects',
     onBlur,
     icon,
     noOptionsText,
@@ -142,7 +141,7 @@ function createDropdownField<T>(props: DropdownFieldProps<T>) {
   const NoOptionsComponent = (props: NoticeProps) => {
     return (
       <components.NoOptionsMessage {...props}>
-        <Text textColor={'placeholder'}>{noOptionsText || t('noResults')}</Text>
+        <Text textColor={'placeholder'}>{noOptionsText || 'noResults'}</Text>
       </components.NoOptionsMessage>
     );
   };
@@ -241,10 +240,7 @@ function createDropdownField<T>(props: DropdownFieldProps<T>) {
           }
           formatCreateLabel={text => {
             if (type === DropdownType.SINGLE_CREATABLE) {
-              return (
-                props.formatCreateLabel?.(text) ??
-                `${t('create', {input: text})}`
-              );
+              return props.formatCreateLabel?.(text) ?? `Aammaken "${text}"`;
             }
             return '';
           }}
@@ -465,10 +461,9 @@ function createDropdownField<T>(props: DropdownFieldProps<T>) {
 }
 
 export const ClearIndicator = memo((props: ClearIndicatorProps) => {
-  const {t} = useTranslation('common');
   return (
     <components.ClearIndicator {...props}>
-      <TransparentIconButton label={t('clearInput')} icon={<CloseIcon />} />
+      <TransparentIconButton label={'clearInput'} icon={<CloseIcon />} />
     </components.ClearIndicator>
   );
 });

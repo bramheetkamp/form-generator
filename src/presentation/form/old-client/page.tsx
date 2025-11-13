@@ -6,11 +6,10 @@ import {useRouter} from 'next/router';
 
 export const FormOldClientPage = () => {
   const router = useRouter();
-  const {t} = useTranslation('form');
 
   return (
     <BaseLayout
-      title={t('old-client')}
+      title={'old-client'}
       showBackButton={true}
       onBackButtonClicked={() => router.back()}
     >
@@ -24,7 +23,7 @@ export const FormOldClientPage = () => {
         direction="column"
       >
         <Text variant={'title'} w={'full'} noOfLines={1} mb={4}>
-          {t('help')}
+          {'help'}
         </Text>
       </Flex>
     </BaseLayout>

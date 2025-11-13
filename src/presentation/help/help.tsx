@@ -6,11 +6,10 @@ import {useRouter} from 'next/router';
 
 export const HelpPage = () => {
   const router = useRouter();
-  const {t} = useTranslation('common');
 
   return (
     <BaseLayout
-      title={t('help')}
+      title={'help'}
       showBackButton={true}
       onBackButtonClicked={() => router.back()}
     >
@@ -24,7 +23,7 @@ export const HelpPage = () => {
         direction="column"
       >
         <Text variant={'title'} w={'full'} noOfLines={1} mb={4}>
-          {t('help')}
+          {'help'}
         </Text>
       </Flex>
     </BaseLayout>

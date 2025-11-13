@@ -1,11 +1,11 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { 
-  ClientData, 
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {
+  ClientData,
   IntakeVLOSData,
   IntakePulmanData,
   IntakeOSBData,
   IntakeOVACData,
-  IntakeSteunzolenData
+  IntakeSteunzolenData,
 } from '@/presentation/form/types/formData';
 
 export interface FormDataState {
@@ -45,10 +45,13 @@ const formDataSlice = createSlice({
     setIntakeOVACData: (state, action: PayloadAction<IntakeOVACData>) => {
       state.intakeOVAC = action.payload;
     },
-    setIntakeSteunzolenData: (state, action: PayloadAction<IntakeSteunzolenData>) => {
+    setIntakeSteunzolenData: (
+      state,
+      action: PayloadAction<IntakeSteunzolenData>
+    ) => {
       state.intakeSteunzolen = action.payload;
     },
-    clearFormData: (state) => {
+    clearFormData: state => {
       state.client = null;
       state.intakeVLOS = null;
       state.intakePulman = null;
@@ -59,13 +62,13 @@ const formDataSlice = createSlice({
   },
 });
 
-export const { 
-  setClientData, 
-  setIntakeVLOSData, 
+export const {
+  setClientData,
+  setIntakeVLOSData,
   setIntakePulmanData,
   setIntakeOSBData,
   setIntakeOVACData,
   setIntakeSteunzolenData,
-  clearFormData 
+  clearFormData,
 } = formDataSlice.actions;
 export default formDataSlice.reducer;
