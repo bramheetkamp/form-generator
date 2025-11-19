@@ -17,6 +17,7 @@ import {
 } from '@chakra-ui/react';
 import useTranslation from 'next-translate/useTranslation';
 import { useRouter } from 'next/router';
+import { Routes } from '../../routes';
 import { DatePickerField } from '@/presentation/base/input/datePickerField';
 import {
   LOCATION_OPTIONS,
@@ -25,7 +26,10 @@ import {
   Location,
   Salutation,
 } from '@/presentation/form/constants/formConstants';
-import { DropdownField, DropdownType } from '@/presentation/base/input/dropdownField';
+import {
+  DropdownField,
+  DropdownType,
+} from '@/presentation/base/input/dropdownField';
 import { useAppDispatch, useAppSelector } from '@/domain/store/hooks';
 import { setClientData } from '@/domain/store/slices/formData';
 
@@ -38,19 +42,33 @@ export const FormOldClientPage = () => {
   const [practitionerId, setPractitionerId] = useState<string | undefined>(
     existingClient?.practitionerId
   );
-  const [date, setDate] = useState(existingClient?.date ? existingClient.date : '');
-  const [location, setLocation] = useState<Location | ''>(existingClient?.location || '');
-  const [salutation, setSalutation] = useState<Salutation | ''>(existingClient?.salutation || '');
+  const [date, setDate] = useState(
+    existingClient?.date ? existingClient.date : ''
+  );
+  const [location, setLocation] = useState<Location | ''>(
+    existingClient?.location || ''
+  );
+  const [salutation, setSalutation] = useState<Salutation | ''>(
+    existingClient?.salutation || ''
+  );
   const [initials, setInitials] = useState(existingClient?.initials || '');
-  const [clientName, setClientName] = useState(existingClient?.clientName || '');
+  const [clientName, setClientName] = useState(
+    existingClient?.clientName || ''
+  );
   const [birthDate, setBirthDate] = useState(existingClient?.birthDate || '');
   const [address, setAddress] = useState(existingClient?.address || '');
-  const [postalCode, setPostalCode] = useState(existingClient?.postalCode || '');
-  const [houseNumber, setHouseNumber] = useState(existingClient?.houseNumber || '');
+  const [postalCode, setPostalCode] = useState(
+    existingClient?.postalCode || ''
+  );
+  const [houseNumber, setHouseNumber] = useState(
+    existingClient?.houseNumber || ''
+  );
   const [city, setCity] = useState(existingClient?.city || '');
   const [email, setEmail] = useState(existingClient?.email || '');
   const [insurance, setInsurance] = useState(existingClient?.insurance || '');
-  const [specialist, setSpecialist] = useState(existingClient?.specialist || '');
+  const [specialist, setSpecialist] = useState(
+    existingClient?.specialist || ''
+  );
   const [phoneOne, setPhoneOne] = useState(existingClient?.phoneOne || '');
   const [phoneTwo, setPhoneTwo] = useState(existingClient?.phoneTwo || '');
 
@@ -64,7 +82,9 @@ export const FormOldClientPage = () => {
     birthDate.length > 0;
 
   const handleSubmit = () => {
-    if (!areTopSectionsValid) return;
+    if (!areTopSectionsValid) {
+      return;
+    }
     dispatch(
       setClientData({
         practitionerId,
@@ -88,7 +108,9 @@ export const FormOldClientPage = () => {
         familyDoctor: existingClient?.familyDoctor,
       })
     );
-    router.push('/form/intake-vlos');
+
+    // Navigeer naar form selection page
+    router.push(Routes.form_selection);
   };
 
   return (
@@ -156,8 +178,14 @@ export const FormOldClientPage = () => {
             p={4}
             mt={2}
           >
-            <RadioGroup value={location} onChange={v => setLocation(v as Location)}>
-              <Stack direction={{ base: 'column', sm: 'row' }} spacing={{ base: 2, sm: 6 }}>
+            <RadioGroup
+              value={location}
+              onChange={v => setLocation(v as Location)}
+            >
+              <Stack
+                direction={{ base: 'column', sm: 'row' }}
+                spacing={{ base: 2, sm: 6 }}
+              >
                 {LOCATION_OPTIONS.map(o => (
                   <Radio key={o.value} value={o.value}>
                     {o.label}
@@ -183,7 +211,10 @@ export const FormOldClientPage = () => {
           >
             <FormControl>
               <FormLabel fontSize="sm">{t('aanhef')}</FormLabel>
-              <RadioGroup value={salutation} onChange={v => setSalutation(v as Salutation)}>
+              <RadioGroup
+                value={salutation}
+                onChange={v => setSalutation(v as Salutation)}
+              >
                 <Stack direction="row" spacing={6}>
                   {SALUTATION_OPTIONS.map(o => (
                     <Radio key={o.value} value={o.value}>
@@ -193,8 +224,15 @@ export const FormOldClientPage = () => {
                 </Stack>
               </RadioGroup>
             </FormControl>
-            <Flex gap={{ base: 4, md: 6 }} direction={{ base: 'column', md: 'row' }}>
-              <FormControl flex={1} isRequired isInvalid={initials.trim().length === 0}>
+            <Flex
+              gap={{ base: 4, md: 6 }}
+              direction={{ base: 'column', md: 'row' }}
+            >
+              <FormControl
+                flex={1}
+                isRequired
+                isInvalid={initials.trim().length === 0}
+              >
                 <FormLabel fontSize="sm">{t('voorletters')}</FormLabel>
                 <Input
                   value={initials}
@@ -203,7 +241,11 @@ export const FormOldClientPage = () => {
                   placeholder={t('voorllettersPlaceholder')}
                 />
               </FormControl>
-              <FormControl flex={1} isRequired isInvalid={clientName.trim().length === 0}>
+              <FormControl
+                flex={1}
+                isRequired
+                isInvalid={clientName.trim().length === 0}
+              >
                 <FormLabel fontSize="sm">{t('achternaam')}</FormLabel>
                 <Input
                   value={clientName}
@@ -226,7 +268,8 @@ export const FormOldClientPage = () => {
           </Flex>
           {!areTopSectionsValid && (
             <Alert status="warning" mt={4}>
-              <AlertIcon />Vul alle verplichte velden hierboven in om verder te gaan.
+              <AlertIcon />
+              Vul alle verplichte velden hierboven in om verder te gaan.
             </Alert>
           )}
         </Box>
@@ -244,7 +287,10 @@ export const FormOldClientPage = () => {
             p={4}
             mt={2}
           >
-            <Flex gap={{ base: 4, md: 6 }} direction={{ base: 'column', sm: 'row' }}>
+            <Flex
+              gap={{ base: 4, md: 6 }}
+              direction={{ base: 'column', sm: 'row' }}
+            >
               <FormControl flex={1}>
                 <FormLabel fontSize="sm">{t('postcode')}</FormLabel>
                 <Input
@@ -264,7 +310,10 @@ export const FormOldClientPage = () => {
                 />
               </FormControl>
             </Flex>
-            <Flex gap={{ base: 4, md: 6 }} direction={{ base: 'column', md: 'row' }}>
+            <Flex
+              gap={{ base: 4, md: 6 }}
+              direction={{ base: 'column', md: 'row' }}
+            >
               <FormControl flex={1}>
                 <FormLabel fontSize="sm">{t('straatnaam')}</FormLabel>
                 <Input
@@ -300,7 +349,10 @@ export const FormOldClientPage = () => {
             p={4}
             mt={2}
           >
-            <Flex gap={{ base: 4, md: 6 }} direction={{ base: 'column', md: 'row' }}>
+            <Flex
+              gap={{ base: 4, md: 6 }}
+              direction={{ base: 'column', md: 'row' }}
+            >
               <FormControl flex={1}>
                 <FormLabel fontSize="sm">{t('telefoon1')}</FormLabel>
                 <Input
@@ -348,9 +400,14 @@ export const FormOldClientPage = () => {
             p={4}
             mt={2}
           >
-            <Flex gap={{ base: 4, md: 6 }} direction={{ base: 'column', md: 'row' }}>
+            <Flex
+              gap={{ base: 4, md: 6 }}
+              direction={{ base: 'column', md: 'row' }}
+            >
               <FormControl flex={1}>
-                <FormLabel fontSize="sm">{t('verzekeringsmaatschappij')}</FormLabel>
+                <FormLabel fontSize="sm">
+                  {t('verzekeringsmaatschappij')}
+                </FormLabel>
                 <Input
                   value={insurance}
                   onChange={e => setInsurance(e.target.value)}
@@ -377,7 +434,9 @@ export const FormOldClientPage = () => {
             w={{ base: 'full', sm: 'auto' }}
             isDisabled={!areTopSectionsValid}
           >
-            {areTopSectionsValid ? t('opslaanEnDoorgaan') : 'Vul verplichte velden in'}
+            {areTopSectionsValid
+              ? t('opslaanEnDoorgaan')
+              : 'Vul verplichte velden in'}
           </Button>
         </Flex>
       </Flex>

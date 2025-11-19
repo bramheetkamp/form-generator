@@ -27,6 +27,7 @@ import { DatePickerField } from '@/presentation/base/input/datePickerField';
 
 import useTranslation from 'next-translate/useTranslation';
 import { useRouter } from 'next/router';
+import { Routes } from '../../routes';
 import { useAppDispatch } from '@/domain/store/hooks';
 import { setIntakeOSBData } from '@/domain/store/slices/formData';
 import {
@@ -182,6 +183,9 @@ export const FormIntakeOSBPage = () => {
     );
 
     console.log('Intake OSB data opgeslagen in Redux store');
+
+    // Navigeer naar results page
+    router.push(Routes.form_results);
   };
 
   return (
@@ -513,7 +517,9 @@ export const FormIntakeOSBPage = () => {
                 <Box>
                   <Checkbox
                     isChecked={verdiepingenVoorvoetLinks}
-                    onChange={e => setVerdiepingenVoorvoetLinks(e.target.checked)}
+                    onChange={e =>
+                      setVerdiepingenVoorvoetLinks(e.target.checked)
+                    }
                     size="sm"
                     mb={verdiepingenVoorvoetLinks ? 2 : 0}
                   >
@@ -525,7 +531,9 @@ export const FormIntakeOSBPage = () => {
                         <Checkbox
                           key={option}
                           isChecked={verdiepingenVoorvoetLinksMm === option}
-                          onChange={() => setVerdiepingenVoorvoetLinksMm(option)}
+                          onChange={() =>
+                            setVerdiepingenVoorvoetLinksMm(option)
+                          }
                           size="sm"
                         >
                           {option}
@@ -552,7 +560,9 @@ export const FormIntakeOSBPage = () => {
                         <Checkbox
                           key={option}
                           isChecked={verdiepingenVoorvoetRechtsMm === option}
-                          onChange={() => setVerdiepingenVoorvoetRechtsMm(option)}
+                          onChange={() =>
+                            setVerdiepingenVoorvoetRechtsMm(option)
+                          }
                           size="sm"
                         >
                           {option}
@@ -614,7 +624,9 @@ export const FormIntakeOSBPage = () => {
                       </Td>
                       <Td textAlign="center">
                         <Checkbox
-                          isChecked={supplements[supplement.key]?.links || false}
+                          isChecked={
+                            supplements[supplement.key]?.links || false
+                          }
                           onChange={() =>
                             toggleSupplement(supplement.key, 'links')
                           }
@@ -623,7 +635,9 @@ export const FormIntakeOSBPage = () => {
                       </Td>
                       <Td textAlign="center">
                         <Checkbox
-                          isChecked={supplements[supplement.key]?.rechts || false}
+                          isChecked={
+                            supplements[supplement.key]?.rechts || false
+                          }
                           onChange={() =>
                             toggleSupplement(supplement.key, 'rechts')
                           }
@@ -664,28 +678,23 @@ export const FormIntakeOSBPage = () => {
                     <Checkbox
                       isChecked={steunzoolType.includes(option)}
                       onChange={() =>
-                        setSteunzoolType(
-                          toggleArrayItem(steunzoolType, option)
-                        )
+                        setSteunzoolType(toggleArrayItem(steunzoolType, option))
                       }
                       size="sm"
                     >
                       {option}
                     </Checkbox>
-                    {option === 'Anders' &&
-                      steunzoolType.includes(option) && (
-                        <Input
-                          placeholder={t('andersSpecificeer')}
-                          value={steunzoolTypeAnders}
-                          onChange={e =>
-                            setSteunzoolTypeAnders(e.target.value)
-                          }
-                          size="sm"
-                          ml={6}
-                          mt={2}
-                          maxW="300px"
-                        />
-                      )}
+                    {option === 'Anders' && steunzoolType.includes(option) && (
+                      <Input
+                        placeholder={t('andersSpecificeer')}
+                        value={steunzoolTypeAnders}
+                        onChange={e => setSteunzoolTypeAnders(e.target.value)}
+                        size="sm"
+                        ml={6}
+                        mt={2}
+                        maxW="300px"
+                      />
+                    )}
                   </Box>
                 ))}
               </Stack>
@@ -703,9 +712,7 @@ export const FormIntakeOSBPage = () => {
                     <Checkbox
                       key={option}
                       isChecked={steunzoolCorrectieMiddenvoet === option}
-                      onChange={() =>
-                        setSteunzoolCorrectieMiddenvoet(option)
-                      }
+                      onChange={() => setSteunzoolCorrectieMiddenvoet(option)}
                       size="sm"
                     >
                       {option}
@@ -723,9 +730,7 @@ export const FormIntakeOSBPage = () => {
                     <Checkbox
                       key={option}
                       isChecked={steunzoolCorrectieVoorvoet === option}
-                      onChange={() =>
-                        setSteunzoolCorrectieVoorvoet(option)
-                      }
+                      onChange={() => setSteunzoolCorrectieVoorvoet(option)}
                       size="sm"
                     >
                       {option}
@@ -768,7 +773,9 @@ export const FormIntakeOSBPage = () => {
                     type="number"
                     placeholder={t('hakVerhogingPlaceholder')}
                     value={steunzoolHakVerhogingLinks}
-                    onChange={e => setSteunzoolHakVerhogingLinks(e.target.value)}
+                    onChange={e =>
+                      setSteunzoolHakVerhogingLinks(e.target.value)
+                    }
                     size="sm"
                   />
                 </FormControl>
@@ -778,7 +785,9 @@ export const FormIntakeOSBPage = () => {
                     type="number"
                     placeholder={t('hakVerhogingPlaceholder')}
                     value={steunzoolHakVerhogingRechts}
-                    onChange={e => setSteunzoolHakVerhogingRechts(e.target.value)}
+                    onChange={e =>
+                      setSteunzoolHakVerhogingRechts(e.target.value)
+                    }
                     size="sm"
                   />
                 </FormControl>

@@ -25,6 +25,7 @@ import {
 
 import useTranslation from 'next-translate/useTranslation';
 import { useRouter } from 'next/router';
+import { Routes } from '../../routes';
 import { useAppDispatch } from '@/domain/store/hooks';
 import { setIntakeOVACData } from '@/domain/store/slices/formData';
 import { OVAC_OMSCHRIJVING_ITEMS } from '@/presentation/form/constants/formConstants';
@@ -61,10 +62,7 @@ export const FormIntakeOVACPage = () => {
   // State voor bijzonderheden
   const [bijzonderheden, setBijzonderheden] = useState('');
 
-  const toggleOmschrijvingItem = (
-    key: string,
-    side: 'links' | 'rechts'
-  ) => {
+  const toggleOmschrijvingItem = (key: string, side: 'links' | 'rechts') => {
     setOmschrijvingItems(prev => ({
       ...prev,
       [key]: {
@@ -88,6 +86,9 @@ export const FormIntakeOVACPage = () => {
     );
 
     console.log('Intake OVAC data opgeslagen in Redux store');
+
+    // Navigeer naar results page
+    router.push(Routes.form_results);
   };
 
   return (
@@ -160,15 +161,23 @@ export const FormIntakeOVACPage = () => {
                       <Td textAlign="center">{item.postNr}</Td>
                       <Td textAlign="center">
                         <Checkbox
-                          isChecked={omschrijvingItems[item.key]?.rechts || false}
-                          onChange={() => toggleOmschrijvingItem(item.key, 'rechts')}
+                          isChecked={
+                            omschrijvingItems[item.key]?.rechts || false
+                          }
+                          onChange={() =>
+                            toggleOmschrijvingItem(item.key, 'rechts')
+                          }
                           size="sm"
                         />
                       </Td>
                       <Td textAlign="center">
                         <Checkbox
-                          isChecked={omschrijvingItems[item.key]?.links || false}
-                          onChange={() => toggleOmschrijvingItem(item.key, 'links')}
+                          isChecked={
+                            omschrijvingItems[item.key]?.links || false
+                          }
+                          onChange={() =>
+                            toggleOmschrijvingItem(item.key, 'links')
+                          }
                           size="sm"
                         />
                       </Td>

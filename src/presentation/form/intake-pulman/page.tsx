@@ -17,9 +17,14 @@ import {
 
 import useTranslation from 'next-translate/useTranslation';
 import { useRouter } from 'next/router';
+import { Routes } from '../../routes';
 import { useAppDispatch } from '@/domain/store/hooks';
 import { setIntakePulmanData } from '@/domain/store/slices/formData';
-import { Side, PULMAN_TYPE_OPTIONS, SHOE_SIZES } from '@/presentation/form/constants/formConstants';
+import {
+  Side,
+  PULMAN_TYPE_OPTIONS,
+  SHOE_SIZES,
+} from '@/presentation/form/constants/formConstants';
 
 export const FormIntakePulmanPage = () => {
   const router = useRouter();
@@ -69,6 +74,9 @@ export const FormIntakePulmanPage = () => {
     );
 
     console.log('Intake Pulman data opgeslagen in Redux store');
+
+    // Navigeer naar results page
+    router.push(Routes.form_results);
   };
 
   return (
@@ -144,7 +152,10 @@ export const FormIntakePulmanPage = () => {
             mt={2}
             color="inherit"
           >
-            <RadioGroup value={gezwachteld} onChange={v => setGezwachteld(v as 'ja' | 'nee')}>
+            <RadioGroup
+              value={gezwachteld}
+              onChange={v => setGezwachteld(v as 'ja' | 'nee')}
+            >
               <Stack direction="row" spacing={6}>
                 <Radio value="ja">{t('ja')}</Radio>
                 <Radio value="nee">{t('nee')}</Radio>
