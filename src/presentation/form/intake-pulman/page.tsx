@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {BaseLayout} from '@/presentation/base/baseLayout';
+import React, { useState } from 'react';
+import { BaseLayout } from '@/presentation/base/baseLayout';
 import {
   Flex,
   FormControl,
@@ -17,17 +17,18 @@ import {
 } from '@chakra-ui/react';
 
 import useTranslation from 'next-translate/useTranslation';
-import {useRouter} from 'next/router';
-import {useAppDispatch} from '@/domain/store/hooks';
-import {setIntakePulmanData} from '@/domain/store/slices/formData';
+import { useRouter } from 'next/router';
+import { useAppDispatch } from '@/domain/store/hooks';
+import { setIntakePulmanData } from '@/domain/store/slices/formData';
+import { Side } from '@/presentation/form/constants/formConstants';
 
 export const FormIntakePulmanPage = () => {
   const router = useRouter();
-  const {t} = useTranslation('form');
+  const { t } = useTranslation('form');
   const dispatch = useAppDispatch();
 
   // State voor Links/Rechts/Beide selectie (default: Beide)
-  const [side, setSide] = useState<string>('beide');
+  const [side, setSide] = useState<Side>('beide');
 
   // State voor omsluiting
   const [omsluitingLinksType, setOmsluitingLinksType] = useState('');
@@ -51,7 +52,7 @@ export const FormIntakePulmanPage = () => {
   const handleSubmit = () => {
     dispatch(
       setIntakePulmanData({
-        side: side as 'beide' | 'links' | 'rechts',
+        side,
         omsluitingLinksType,
         omsluitingRechtsType,
         omsluitingLinksMm,
@@ -76,18 +77,18 @@ export const FormIntakePulmanPage = () => {
         w="full"
         direction="column"
         bg="white"
-        p={{base: 4, md: 6}}
+        p={{ base: 4, md: 6 }}
         borderRadius="md"
-        gap={{base: 4, md: 6}}
+        gap={{ base: 4, md: 6 }}
       >
         {/* Links/Rechts/Beide selectie */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('side')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
-            direction={{base: 'column', md: 'row'}}
+            gap={{ base: 4, md: 6 }}
+            direction={{ base: 'column', md: 'row' }}
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
@@ -96,7 +97,7 @@ export const FormIntakePulmanPage = () => {
             mt={2}
             color="inherit"
           >
-            <RadioGroup value={side} onChange={setSide}>
+            <RadioGroup value={side} onChange={v => setSide(v as Side)}>
               <Stack direction="row" spacing={6}>
                 <Radio value="beide">{t('beide')}</Radio>
                 <Radio value="links">{t('links')}</Radio>
@@ -110,12 +111,12 @@ export const FormIntakePulmanPage = () => {
 
         {/* Omsluiting */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('omsluiting')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
-            direction={{base: 'column', md: 'row'}}
+            gap={{ base: 4, md: 6 }}
+            direction={{ base: 'column', md: 'row' }}
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
@@ -153,11 +154,11 @@ export const FormIntakePulmanPage = () => {
             {showRechts && (
               <Box
                 flex={1}
-                borderLeft={{base: 'none', md: showLinks ? '1px' : 'none'}}
-                borderTop={{base: showLinks ? '1px' : 'none', md: 'none'}}
+                borderLeft={{ base: 'none', md: showLinks ? '1px' : 'none' }}
+                borderTop={{ base: showLinks ? '1px' : 'none', md: 'none' }}
                 borderColor="inherit"
-                pl={{base: 0, md: showLinks ? 6 : 0}}
-                pt={{base: showLinks ? 4 : 0, md: 0}}
+                pl={{ base: 0, md: showLinks ? 6 : 0 }}
+                pt={{ base: showLinks ? 4 : 0, md: 0 }}
               >
                 <FormLabel fontSize="sm" mb={3}>
                   {t('rechts')}
@@ -192,7 +193,7 @@ export const FormIntakePulmanPage = () => {
 
         {/* Proefschoen */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('proefschoen')}
           </Text>
           <FormControl>
@@ -209,12 +210,12 @@ export const FormIntakePulmanPage = () => {
 
         {/* Hiel */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             Hiel
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
-            direction={{base: 'column', md: 'row'}}
+            gap={{ base: 4, md: 6 }}
+            direction={{ base: 'column', md: 'row' }}
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
@@ -251,23 +252,23 @@ export const FormIntakePulmanPage = () => {
 
         {/* Bijzonderheden */}
         <Box>
-          <Text fontWeight="bold" mb={4} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={4} fontSize={{ base: 'md', md: 'lg' }}>
             {t('bijzonderheden')}
           </Text>
           <Textarea
             placeholder={t('bijzonderhedenPlaceholder')}
             value={bijzonderheden}
             onChange={e => setBijzonderheden(e.target.value)}
-            minH={{base: '100px', md: '120px'}}
+            minH={{ base: '100px', md: '120px' }}
           />
         </Box>
 
         {/* Submit button */}
-        <Flex justifyContent={{base: 'stretch', sm: 'flex-end'}} mt={4}>
+        <Flex justifyContent={{ base: 'stretch', sm: 'flex-end' }} mt={4}>
           <Button
             variant="primary"
             onClick={handleSubmit}
-            w={{base: 'full', sm: 'auto'}}
+            w={{ base: 'full', sm: 'auto' }}
           >
             Opslaan en doorgaan
           </Button>

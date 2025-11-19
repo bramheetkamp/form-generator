@@ -1,4 +1,5 @@
 // Type definitions for client and intake form data
+import type { Location, Salutation, Side } from '@/presentation/form/constants/formConstants';
 export interface ClientData {
   // Behandelaar en datum
   practitionerId?: string;
@@ -8,10 +9,10 @@ export interface ClientData {
   osaVlos?: 'OSA' | 'VLOS';
 
   // Locatie
-  location?: 'FZ' | 'FM' | 'NN' | 'MMC' | 'AMC';
+  location?: Location;
 
   // Persoonlijke gegevens
-  salutation?: 'Mw.' | 'Dhr.' | 'Mej.';
+  salutation?: Salutation;
   initials: string;
   clientName: string;
   birthDate: string;
@@ -36,7 +37,7 @@ export interface ClientData {
 
 export interface IntakeVLOSData {
   // Zijde selectie
-  side: 'beide' | 'links' | 'rechts';
+  side: Side;
 
   // Schachthoogte (cm)
   schachthoogteLinks?: string;
@@ -104,7 +105,7 @@ export interface IntakeVLOSData {
 }
 
 export interface IntakePulmanData {
-  side: 'beide' | 'links' | 'rechts';
+  side: Side;
 
   // Omsluiting
   omsluitingLinksType?: string;

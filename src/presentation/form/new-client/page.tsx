@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {BaseLayout} from '@/presentation/base/baseLayout';
+import React, { useState } from 'react';
+import { BaseLayout } from '@/presentation/base/baseLayout';
 import {
   Box,
   Flex,
@@ -14,27 +14,34 @@ import {
   RadioGroup,
 } from '@chakra-ui/react';
 import useTranslation from 'next-translate/useTranslation';
-import {useRouter} from 'next/router';
-import {Routes} from '../../routes';
-import {DatePickerField} from '@/presentation/base/input/datePickerField';
+import { useRouter } from 'next/router';
+import { Routes } from '../../routes';
+import { DatePickerField } from '@/presentation/base/input/datePickerField';
 import {
   DropdownField,
   DropdownType,
 } from '@/presentation/base/input/dropdownField';
-import {useAppDispatch} from '@/domain/store/hooks';
-import {setClientData} from '@/domain/store/slices/formData';
+import {
+  LOCATION_OPTIONS,
+  SALUTATION_OPTIONS,
+  PRACTITIONERS,
+  Location,
+  Salutation,
+} from '@/presentation/form/constants/formConstants';
+import { useAppDispatch } from '@/domain/store/hooks';
+import { setClientData } from '@/domain/store/slices/formData';
 
 export const FormNewClientPage = () => {
   const router = useRouter();
-  const {t} = useTranslation('form');
+  const { t } = useTranslation('form');
   const dispatch = useAppDispatch();
 
   // State voor client data
   const [date, setDate] = useState('');
-  const [location, setLocation] = useState<string>('');
+  const [location, setLocation] = useState<Location | ''>('');
   const [clientName, setClientName] = useState('');
   const [address, setAddress] = useState('');
-  const [salutation, setSalutation] = useState<string>('');
+  const [salutation, setSalutation] = useState<Salutation | ''>('');
   const [initials, setInitials] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [houseNumber, setHouseNumber] = useState('');
@@ -49,13 +56,6 @@ export const FormNewClientPage = () => {
   const [phoneTwo, setPhoneTwo] = useState('');
   const [specialist, setSpecialist] = useState('');
 
-  // Practitioner list
-  const practitioners = [
-    {label: 'Dr. Jan de Vries', value: 'p1'},
-    {label: 'Dr. Anna Jansen', value: 'p2'},
-    {label: 'Dr. Piet van Dijk', value: 'p3'},
-  ];
-
   const handleSubmit = () => {
     // Dispatch client data naar Redux store
     dispatch(
@@ -63,8 +63,8 @@ export const FormNewClientPage = () => {
         practitionerId,
         date,
         osaVlos: 'VLOS', // Alleen VLOS
-        location: location as 'FZ' | 'FM' | 'NN' | 'MMC' | 'AMC' | undefined,
-        salutation: salutation as 'Mw.' | 'Dhr.' | 'Mej.' | undefined,
+        location: location || undefined,
+        salutation: salutation || undefined,
         initials,
         clientName,
         birthDate,
@@ -96,18 +96,18 @@ export const FormNewClientPage = () => {
         w="full"
         direction="column"
         bg="white"
-        p={{base: 4, md: 6}}
+        p={{ base: 4, md: 6 }}
         borderRadius="md"
-        gap={{base: 4, md: 6}}
+        gap={{ base: 4, md: 6 }}
       >
         {/* Behandelaar en Aanmeetdatum */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('behandelaarEnDatum')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
-            direction={{base: 'column', md: 'row'}}
+            gap={{ base: 4, md: 6 }}
+            direction={{ base: 'column', md: 'row' }}
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
@@ -118,7 +118,7 @@ export const FormNewClientPage = () => {
               <FormLabel fontSize="sm">{t('behandelaar')}</FormLabel>
               <DropdownField
                 type={DropdownType.SINGLE_NON_CREATABLE}
-                items={practitioners}
+                items={PRACTITIONERS}
                 item={practitionerId}
                 onItemSelected={item => setPractitionerId(item?.value)}
                 placeholder={t('choosePractitioner')}
@@ -127,7 +127,7 @@ export const FormNewClientPage = () => {
             </FormControl>
             <FormControl flex={1}>
               <FormLabel fontSize="sm">{t('aanmeetdatum')}</FormLabel>
-              <Box maxW={{base: 'full', md: '300px'}}>
+              <Box maxW={{ base: 'full', md: '300px' }}>
                 <DatePickerField
                   date={date ? new Date(date) : undefined}
                   onDateChanged={d => d && setDate(d.toISOString())}
@@ -142,12 +142,12 @@ export const FormNewClientPage = () => {
 
         {/* Locatie */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('locatie')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
-            direction={{base: 'column', md: 'row'}}
+            gap={{ base: 4, md: 6 }}
+            direction={{ base: 'column', md: 'row' }}
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
@@ -155,16 +155,19 @@ export const FormNewClientPage = () => {
             p={4}
             mt={2}
           >
-            <RadioGroup value={location} onChange={setLocation}>
+            <RadioGroup
+              value={location}
+              onChange={v => setLocation(v as Location)}
+            >
               <Stack
-                direction={{base: 'column', sm: 'row'}}
-                spacing={{base: 2, sm: 6}}
+                direction={{ base: 'column', sm: 'row' }}
+                spacing={{ base: 2, sm: 6 }}
               >
-                <Radio value="FZ">FZ</Radio>
-                <Radio value="FM">FM</Radio>
-                <Radio value="NN">NN</Radio>
-                <Radio value="MMC">MMC</Radio>
-                <Radio value="AMC">AMC</Radio>
+                {LOCATION_OPTIONS.map(o => (
+                  <Radio key={o.value} value={o.value}>
+                    {o.label}
+                  </Radio>
+                ))}
               </Stack>
             </RadioGroup>
           </Flex>
@@ -174,11 +177,11 @@ export const FormNewClientPage = () => {
 
         {/* Persoonlijke gegevens */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('persoonlijkeGegevens')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
+            gap={{ base: 4, md: 6 }}
             direction="column"
             border="1px solid"
             borderColor="inherit"
@@ -189,19 +192,24 @@ export const FormNewClientPage = () => {
             {/* Aanhef */}
             <FormControl>
               <FormLabel fontSize="sm">{t('aanhef')}</FormLabel>
-              <RadioGroup value={salutation} onChange={setSalutation}>
+              <RadioGroup
+                value={salutation}
+                onChange={v => setSalutation(v as Salutation)}
+              >
                 <Stack direction="row" spacing={6}>
-                  <Radio value="Mw.">Mw.</Radio>
-                  <Radio value="Dhr.">Dhr.</Radio>
-                  <Radio value="Mej.">Mej.</Radio>
+                  {SALUTATION_OPTIONS.map(o => (
+                    <Radio key={o.value} value={o.value}>
+                      {o.label}
+                    </Radio>
+                  ))}
                 </Stack>
               </RadioGroup>
             </FormControl>
 
             {/* Voorletters en Achternaam */}
             <Flex
-              gap={{base: 4, md: 6}}
-              direction={{base: 'column', md: 'row'}}
+              gap={{ base: 4, md: 6 }}
+              direction={{ base: 'column', md: 'row' }}
             >
               <FormControl flex={1}>
                 <FormLabel fontSize="sm">{t('voorletters')}</FormLabel>
@@ -243,11 +251,11 @@ export const FormNewClientPage = () => {
 
         {/* Adresgegevens */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('adresgegevens')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
+            gap={{ base: 4, md: 6 }}
             direction="column"
             border="1px solid"
             borderColor="inherit"
@@ -257,8 +265,8 @@ export const FormNewClientPage = () => {
           >
             {/* Postcode en Huisnummer */}
             <Flex
-              gap={{base: 4, md: 6}}
-              direction={{base: 'column', sm: 'row'}}
+              gap={{ base: 4, md: 6 }}
+              direction={{ base: 'column', sm: 'row' }}
             >
               <FormControl flex={1}>
                 <FormLabel fontSize="sm">{t('postcode')}</FormLabel>
@@ -282,8 +290,8 @@ export const FormNewClientPage = () => {
 
             {/* Straatnaam en Stad */}
             <Flex
-              gap={{base: 4, md: 6}}
-              direction={{base: 'column', md: 'row'}}
+              gap={{ base: 4, md: 6 }}
+              direction={{ base: 'column', md: 'row' }}
             >
               <FormControl flex={1}>
                 <FormLabel fontSize="sm">{t('straatnaam')}</FormLabel>
@@ -311,11 +319,11 @@ export const FormNewClientPage = () => {
 
         {/* Contactgegevens */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('contactgegevens')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
+            gap={{ base: 4, md: 6 }}
             direction="column"
             border="1px solid"
             borderColor="inherit"
@@ -325,8 +333,8 @@ export const FormNewClientPage = () => {
           >
             {/* Telefoon nummers */}
             <Flex
-              gap={{base: 4, md: 6}}
-              direction={{base: 'column', md: 'row'}}
+              gap={{ base: 4, md: 6 }}
+              direction={{ base: 'column', md: 'row' }}
             >
               <FormControl flex={1}>
                 <FormLabel fontSize="sm">{t('telefoon1')}</FormLabel>
@@ -368,11 +376,11 @@ export const FormNewClientPage = () => {
 
         {/* Verzekering en Medische info */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('verzekeringEnMedischeInformatie')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
+            gap={{ base: 4, md: 6 }}
             direction="column"
             border="1px solid"
             borderColor="inherit"
@@ -381,8 +389,8 @@ export const FormNewClientPage = () => {
             mt={2}
           >
             <Flex
-              gap={{base: 4, md: 6}}
-              direction={{base: 'column', md: 'row'}}
+              gap={{ base: 4, md: 6 }}
+              direction={{ base: 'column', md: 'row' }}
             >
               <FormControl flex={1}>
                 <FormLabel fontSize="sm">
@@ -409,11 +417,11 @@ export const FormNewClientPage = () => {
         </Box>
 
         {/* Submit button */}
-        <Flex justifyContent={{base: 'stretch', sm: 'flex-end'}} mt={4}>
+        <Flex justifyContent={{ base: 'stretch', sm: 'flex-end' }} mt={4}>
           <Button
             variant="primary"
             onClick={handleSubmit}
-            w={{base: 'full', sm: 'auto'}}
+            w={{ base: 'full', sm: 'auto' }}
           >
             {t('doorgaanNaarVlosIntake')}
           </Button>

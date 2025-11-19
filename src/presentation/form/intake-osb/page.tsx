@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {BaseLayout} from '@/presentation/base/baseLayout';
+import React, { useState } from 'react';
+import { BaseLayout } from '@/presentation/base/baseLayout';
 import {
   Flex,
   FormControl,
@@ -18,13 +18,13 @@ import {
 } from '@chakra-ui/react';
 
 import useTranslation from 'next-translate/useTranslation';
-import {useRouter} from 'next/router';
-import {useAppDispatch} from '@/domain/store/hooks';
-import {setIntakeOSBData} from '@/domain/store/slices/formData';
+import { useRouter } from 'next/router';
+import { useAppDispatch } from '@/domain/store/hooks';
+import { setIntakeOSBData } from '@/domain/store/slices/formData';
 
 export const FormIntakeOSBPage = () => {
   const router = useRouter();
-  const {t} = useTranslation('form');
+  const { t } = useTranslation('form');
   const dispatch = useAppDispatch();
 
   // State voor proefschoen
@@ -99,18 +99,18 @@ export const FormIntakeOSBPage = () => {
         w="full"
         direction="column"
         bg="white"
-        p={{base: 4, md: 6}}
+        p={{ base: 4, md: 6 }}
         borderRadius="md"
-        gap={{base: 4, md: 6}}
+        gap={{ base: 4, md: 6 }}
       >
         {/* Proefschoen */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('proefschoen')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
-            direction={{base: 'column', md: 'row'}}
+            gap={{ base: 4, md: 6 }}
+            direction={{ base: 'column', md: 'row' }}
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
@@ -131,7 +131,7 @@ export const FormIntakeOSBPage = () => {
 
         {/* Datum */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             Datum
           </Text>
           <FormControl>
@@ -148,7 +148,7 @@ export const FormIntakeOSBPage = () => {
 
         {/* Diktes */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             Diktes
           </Text>
           <FormControl>
@@ -165,7 +165,7 @@ export const FormIntakeOSBPage = () => {
 
         {/* Maatverdeling */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             Maatverdeling
           </Text>
           <FormControl>
@@ -182,7 +182,7 @@ export const FormIntakeOSBPage = () => {
 
         {/* Schoen Sizes (24-32) */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             Maat
           </Text>
           <Box
@@ -192,13 +192,13 @@ export const FormIntakeOSBPage = () => {
             p={4}
             mt={2}
           >
-            <SimpleGrid columns={{base: 3, sm: 5, md: 9}} spacing={4}>
+            <SimpleGrid columns={{ base: 3, sm: 5, md: 9 }} spacing={4}>
               {Object.keys(schoenSizes).map(size => (
                 <Checkbox
                   key={size}
                   isChecked={schoenSizes[size]}
                   onChange={e =>
-                    setSchoenSizes({...schoenSizes, [size]: e.target.checked})
+                    setSchoenSizes({ ...schoenSizes, [size]: e.target.checked })
                   }
                   size="sm"
                 >
@@ -213,7 +213,7 @@ export const FormIntakeOSBPage = () => {
 
         {/* Procedures */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             Procedures
           </Text>
           <Box
@@ -281,23 +281,23 @@ export const FormIntakeOSBPage = () => {
 
         {/* Bijzonderheden */}
         <Box>
-          <Text fontWeight="bold" mb={4} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={4} fontSize={{ base: 'md', md: 'lg' }}>
             {t('bijzonderheden')}
           </Text>
           <Textarea
             placeholder={t('bijzonderhedenPlaceholder')}
             value={bijzonderheden}
             onChange={e => setBijzonderheden(e.target.value)}
-            minH={{base: '100px', md: '120px'}}
+            minH={{ base: '100px', md: '120px' }}
           />
         </Box>
 
         {/* Submit button */}
-        <Flex justifyContent={{base: 'stretch', sm: 'flex-end'}} mt={4}>
+        <Flex justifyContent={{ base: 'stretch', sm: 'flex-end' }} mt={4}>
           <Button
             variant="primary"
             onClick={handleSubmit}
-            w={{base: 'full', sm: 'auto'}}
+            w={{ base: 'full', sm: 'auto' }}
           >
             Opslaan en doorgaan
           </Button>
