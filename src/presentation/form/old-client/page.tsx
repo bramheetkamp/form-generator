@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BaseLayout } from '@/presentation/base/baseLayout';
+import React, {useState} from 'react';
+import {BaseLayout} from '@/presentation/base/baseLayout';
 import {
   Box,
   Flex,
@@ -16,8 +16,8 @@ import {
   AlertIcon,
 } from '@chakra-ui/react';
 import useTranslation from 'next-translate/useTranslation';
-import { useRouter } from 'next/router';
-import { DatePickerField } from '@/presentation/base/input/datePickerField';
+import {useRouter} from 'next/router';
+import {DatePickerField} from '@/presentation/base/input/datePickerField';
 import {
   LOCATION_OPTIONS,
   SALUTATION_OPTIONS,
@@ -25,32 +25,49 @@ import {
   Location,
   Salutation,
 } from '@/presentation/form/constants/formConstants';
-import { DropdownField, DropdownType } from '@/presentation/base/input/dropdownField';
-import { useAppDispatch, useAppSelector } from '@/domain/store/hooks';
-import { setClientData } from '@/domain/store/slices/formData';
+import {
+  DropdownField,
+  DropdownType,
+} from '@/presentation/base/input/dropdownField';
+import {useAppDispatch, useAppSelector} from '@/domain/store/hooks';
+import {setClientData} from '@/domain/store/slices/formData';
 
 export const FormOldClientPage = () => {
   const router = useRouter();
-  const { t } = useTranslation('form');
+  const {t} = useTranslation('form');
   const dispatch = useAppDispatch();
   const existingClient = useAppSelector(s => s.formData.client);
 
   const [practitionerId, setPractitionerId] = useState<string | undefined>(
     existingClient?.practitionerId
   );
-  const [date, setDate] = useState(existingClient?.date ? existingClient.date : '');
-  const [location, setLocation] = useState<Location | ''>(existingClient?.location || '');
-  const [salutation, setSalutation] = useState<Salutation | ''>(existingClient?.salutation || '');
+  const [date, setDate] = useState(
+    existingClient?.date ? existingClient.date : ''
+  );
+  const [location, setLocation] = useState<Location | ''>(
+    existingClient?.location || ''
+  );
+  const [salutation, setSalutation] = useState<Salutation | ''>(
+    existingClient?.salutation || ''
+  );
   const [initials, setInitials] = useState(existingClient?.initials || '');
-  const [clientName, setClientName] = useState(existingClient?.clientName || '');
+  const [clientName, setClientName] = useState(
+    existingClient?.clientName || ''
+  );
   const [birthDate, setBirthDate] = useState(existingClient?.birthDate || '');
   const [address, setAddress] = useState(existingClient?.address || '');
-  const [postalCode, setPostalCode] = useState(existingClient?.postalCode || '');
-  const [houseNumber, setHouseNumber] = useState(existingClient?.houseNumber || '');
+  const [postalCode, setPostalCode] = useState(
+    existingClient?.postalCode || ''
+  );
+  const [houseNumber, setHouseNumber] = useState(
+    existingClient?.houseNumber || ''
+  );
   const [city, setCity] = useState(existingClient?.city || '');
   const [email, setEmail] = useState(existingClient?.email || '');
   const [insurance, setInsurance] = useState(existingClient?.insurance || '');
-  const [specialist, setSpecialist] = useState(existingClient?.specialist || '');
+  const [specialist, setSpecialist] = useState(
+    existingClient?.specialist || ''
+  );
   const [phoneOne, setPhoneOne] = useState(existingClient?.phoneOne || '');
   const [phoneTwo, setPhoneTwo] = useState(existingClient?.phoneTwo || '');
 
@@ -64,7 +81,9 @@ export const FormOldClientPage = () => {
     birthDate.length > 0;
 
   const handleSubmit = () => {
-    if (!areTopSectionsValid) return;
+    if (!areTopSectionsValid) {
+      return;
+    }
     dispatch(
       setClientData({
         practitionerId,
@@ -101,17 +120,17 @@ export const FormOldClientPage = () => {
         w="full"
         direction="column"
         bg="white"
-        p={{ base: 4, md: 6 }}
+        p={{base: 4, md: 6}}
         borderRadius="md"
-        gap={{ base: 4, md: 6 }}
+        gap={{base: 4, md: 6}}
       >
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
+          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
             {t('behandelaarEnDatum')}
           </Text>
           <Flex
-            gap={{ base: 4, md: 6 }}
-            direction={{ base: 'column', md: 'row' }}
+            gap={{base: 4, md: 6}}
+            direction={{base: 'column', md: 'row'}}
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
@@ -131,7 +150,7 @@ export const FormOldClientPage = () => {
             </FormControl>
             <FormControl flex={1} isRequired isInvalid={!date}>
               <FormLabel fontSize="sm">{t('aanmeetdatum')}</FormLabel>
-              <Box maxW={{ base: 'full', md: '300px' }}>
+              <Box maxW={{base: 'full', md: '300px'}}>
                 <DatePickerField
                   date={date ? new Date(date) : undefined}
                   onDateChanged={d => d && setDate(d.toISOString())}
@@ -143,12 +162,12 @@ export const FormOldClientPage = () => {
         </Box>
         <Divider />
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
+          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
             {t('locatie')}
           </Text>
           <Flex
-            gap={{ base: 4, md: 6 }}
-            direction={{ base: 'column', md: 'row' }}
+            gap={{base: 4, md: 6}}
+            direction={{base: 'column', md: 'row'}}
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
@@ -156,8 +175,14 @@ export const FormOldClientPage = () => {
             p={4}
             mt={2}
           >
-            <RadioGroup value={location} onChange={v => setLocation(v as Location)}>
-              <Stack direction={{ base: 'column', sm: 'row' }} spacing={{ base: 2, sm: 6 }}>
+            <RadioGroup
+              value={location}
+              onChange={v => setLocation(v as Location)}
+            >
+              <Stack
+                direction={{base: 'column', sm: 'row'}}
+                spacing={{base: 2, sm: 6}}
+              >
                 {LOCATION_OPTIONS.map(o => (
                   <Radio key={o.value} value={o.value}>
                     {o.label}
@@ -169,11 +194,11 @@ export const FormOldClientPage = () => {
         </Box>
         <Divider />
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
+          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
             {t('persoonlijkeGegevens')}
           </Text>
           <Flex
-            gap={{ base: 4, md: 6 }}
+            gap={{base: 4, md: 6}}
             direction="column"
             border="1px solid"
             borderColor="inherit"
@@ -183,7 +208,10 @@ export const FormOldClientPage = () => {
           >
             <FormControl>
               <FormLabel fontSize="sm">{t('aanhef')}</FormLabel>
-              <RadioGroup value={salutation} onChange={v => setSalutation(v as Salutation)}>
+              <RadioGroup
+                value={salutation}
+                onChange={v => setSalutation(v as Salutation)}
+              >
                 <Stack direction="row" spacing={6}>
                   {SALUTATION_OPTIONS.map(o => (
                     <Radio key={o.value} value={o.value}>
@@ -193,8 +221,15 @@ export const FormOldClientPage = () => {
                 </Stack>
               </RadioGroup>
             </FormControl>
-            <Flex gap={{ base: 4, md: 6 }} direction={{ base: 'column', md: 'row' }}>
-              <FormControl flex={1} isRequired isInvalid={initials.trim().length === 0}>
+            <Flex
+              gap={{base: 4, md: 6}}
+              direction={{base: 'column', md: 'row'}}
+            >
+              <FormControl
+                flex={1}
+                isRequired
+                isInvalid={initials.trim().length === 0}
+              >
                 <FormLabel fontSize="sm">{t('voorletters')}</FormLabel>
                 <Input
                   value={initials}
@@ -203,7 +238,11 @@ export const FormOldClientPage = () => {
                   placeholder={t('voorllettersPlaceholder')}
                 />
               </FormControl>
-              <FormControl flex={1} isRequired isInvalid={clientName.trim().length === 0}>
+              <FormControl
+                flex={1}
+                isRequired
+                isInvalid={clientName.trim().length === 0}
+              >
                 <FormLabel fontSize="sm">{t('achternaam')}</FormLabel>
                 <Input
                   value={clientName}
@@ -226,17 +265,18 @@ export const FormOldClientPage = () => {
           </Flex>
           {!areTopSectionsValid && (
             <Alert status="warning" mt={4}>
-              <AlertIcon />Vul alle verplichte velden hierboven in om verder te gaan.
+              <AlertIcon />
+              Vul alle verplichte velden hierboven in om verder te gaan.
             </Alert>
           )}
         </Box>
         <Divider />
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
+          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
             {t('adresgegevens')}
           </Text>
           <Flex
-            gap={{ base: 4, md: 6 }}
+            gap={{base: 4, md: 6}}
             direction="column"
             border="1px solid"
             borderColor="inherit"
@@ -244,7 +284,10 @@ export const FormOldClientPage = () => {
             p={4}
             mt={2}
           >
-            <Flex gap={{ base: 4, md: 6 }} direction={{ base: 'column', sm: 'row' }}>
+            <Flex
+              gap={{base: 4, md: 6}}
+              direction={{base: 'column', sm: 'row'}}
+            >
               <FormControl flex={1}>
                 <FormLabel fontSize="sm">{t('postcode')}</FormLabel>
                 <Input
@@ -264,7 +307,10 @@ export const FormOldClientPage = () => {
                 />
               </FormControl>
             </Flex>
-            <Flex gap={{ base: 4, md: 6 }} direction={{ base: 'column', md: 'row' }}>
+            <Flex
+              gap={{base: 4, md: 6}}
+              direction={{base: 'column', md: 'row'}}
+            >
               <FormControl flex={1}>
                 <FormLabel fontSize="sm">{t('straatnaam')}</FormLabel>
                 <Input
@@ -288,11 +334,11 @@ export const FormOldClientPage = () => {
         </Box>
         <Divider />
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
+          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
             {t('contactgegevens')}
           </Text>
           <Flex
-            gap={{ base: 4, md: 6 }}
+            gap={{base: 4, md: 6}}
             direction="column"
             border="1px solid"
             borderColor="inherit"
@@ -300,7 +346,10 @@ export const FormOldClientPage = () => {
             p={4}
             mt={2}
           >
-            <Flex gap={{ base: 4, md: 6 }} direction={{ base: 'column', md: 'row' }}>
+            <Flex
+              gap={{base: 4, md: 6}}
+              direction={{base: 'column', md: 'row'}}
+            >
               <FormControl flex={1}>
                 <FormLabel fontSize="sm">{t('telefoon1')}</FormLabel>
                 <Input
@@ -336,11 +385,11 @@ export const FormOldClientPage = () => {
         </Box>
         <Divider />
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
+          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
             {t('verzekeringEnMedischeInformatie')}
           </Text>
           <Flex
-            gap={{ base: 4, md: 6 }}
+            gap={{base: 4, md: 6}}
             direction="column"
             border="1px solid"
             borderColor="inherit"
@@ -348,9 +397,14 @@ export const FormOldClientPage = () => {
             p={4}
             mt={2}
           >
-            <Flex gap={{ base: 4, md: 6 }} direction={{ base: 'column', md: 'row' }}>
+            <Flex
+              gap={{base: 4, md: 6}}
+              direction={{base: 'column', md: 'row'}}
+            >
               <FormControl flex={1}>
-                <FormLabel fontSize="sm">{t('verzekeringsmaatschappij')}</FormLabel>
+                <FormLabel fontSize="sm">
+                  {t('verzekeringsmaatschappij')}
+                </FormLabel>
                 <Input
                   value={insurance}
                   onChange={e => setInsurance(e.target.value)}
@@ -370,14 +424,16 @@ export const FormOldClientPage = () => {
             </Flex>
           </Flex>
         </Box>
-        <Flex justifyContent={{ base: 'stretch', sm: 'flex-end' }} mt={4}>
+        <Flex justifyContent={{base: 'stretch', sm: 'flex-end'}} mt={4}>
           <Button
             variant="primary"
             onClick={handleSubmit}
-            w={{ base: 'full', sm: 'auto' }}
+            w={{base: 'full', sm: 'auto'}}
             isDisabled={!areTopSectionsValid}
           >
-            {areTopSectionsValid ? t('opslaanEnDoorgaan') : 'Vul verplichte velden in'}
+            {areTopSectionsValid
+              ? t('opslaanEnDoorgaan')
+              : 'Vul verplichte velden in'}
           </Button>
         </Flex>
       </Flex>

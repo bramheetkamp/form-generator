@@ -8,6 +8,8 @@ export const Routes = {
   // Forms
   form_new_client: '/new-client',
   form_old_client: '/old-client',
+  form_selection: '/form-selection',
+  form_results: '/form-results',
   form_intake_vlos: '/intake-vlos',
   form_intake_pulman: '/intake-pulman',
   form_intake_rebacare: '/intake-rebacare',

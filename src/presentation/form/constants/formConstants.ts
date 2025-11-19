@@ -2,13 +2,13 @@
 
 // Practitioners
 export const PRACTITIONERS = [
-  { label: 'Johan Bonekamp', value: 'p1' },
-  { label: 'Job de Graaff', value: 'p2' },
-  { label: 'Daan Heetkamp', value: 'p3' },
-  { label: 'Michel Heetkamp', value: 'p4' },
-  { label: 'Anne Hummelen', value: 'p5' },
-  { label: 'Mia Rietberg', value: 'p6' },
-  { label: 'Norah Schrijver', value: 'p7' },
+  {label: 'Johan Bonekamp', value: 'p1'},
+  {label: 'Job de Graaff', value: 'p2'},
+  {label: 'Daan Heetkamp', value: 'p3'},
+  {label: 'Michel Heetkamp', value: 'p4'},
+  {label: 'Anne Hummelen', value: 'p5'},
+  {label: 'Mia Rietberg', value: 'p6'},
+  {label: 'Norah Schrijver', value: 'p7'},
 ];
 
 // Locations
@@ -22,12 +22,12 @@ export const LOCATIONS = [
   'Markelo',
 ] as const;
 export type Location = (typeof LOCATIONS)[number];
-export const LOCATION_OPTIONS = LOCATIONS.map(v => ({ label: v, value: v }));
+export const LOCATION_OPTIONS = LOCATIONS.map(v => ({label: v, value: v}));
 
 // Salutations
 export const SALUTATIONS = ['Mw.', 'Dhr.', 'X.'] as const;
 export type Salutation = (typeof SALUTATIONS)[number];
-export const SALUTATION_OPTIONS = SALUTATIONS.map(v => ({ label: v, value: v }));
+export const SALUTATION_OPTIONS = SALUTATIONS.map(v => ({label: v, value: v}));
 
 // Generic sides used across intake forms
 export const SIDES = ['beide', 'links', 'rechts'] as const;
@@ -94,16 +94,16 @@ export type OmsluitingOption = {
 };
 
 export const OMSLUITING_OPTIONS: OmsluitingOption[] = [
-  { key: 'hoge', label: 'Hoge omsluiting', needsMm: true },
-  { key: 'lavero', label: 'Lavero omsluiting', needsMm: true, defaultMm: '4' },
+  {key: 'hoge', label: 'Hoge omsluiting', needsMm: true},
+  {key: 'lavero', label: 'Lavero omsluiting', needsMm: true, defaultMm: '4'},
   {
     key: 'multivorm',
     label: 'Multivorm omsluiting',
     needsMm: true,
     defaultMm: '3',
   },
-  { key: 'plastazote', label: 'Plastazote', needsMm: true, defaultMm: '3' },
-  { key: 'orca', label: 'Orca omsluiting', needsMm: false },
+  {key: 'plastazote', label: 'Plastazote', needsMm: true, defaultMm: '3'},
+  {key: 'orca', label: 'Orca omsluiting', needsMm: false},
 ];
 
 // Pulman types
@@ -115,7 +115,7 @@ export const PULMAN_TYPE_OPTIONS = PULMAN_TYPES.map(v => ({
 }));
 
 // Shoe sizes (37-48)
-export const SHOE_SIZES = Array.from({ length: 12 }, (_, i) =>
+export const SHOE_SIZES = Array.from({length: 12}, (_, i) =>
   (37 + i).toString()
 );
 export type ShoeSize = (typeof SHOE_SIZES)[number];
@@ -162,14 +162,14 @@ export type BasiscodeOption = (typeof BASISCODE_OPTIONS)[number];
 
 // Supplement opties met codes (in tabel met L/R)
 export const SUPPLEMENT_OPTIONS = [
-  { key: 'individueel', label: 'Supplement individueel', code: 43 },
-  { key: 'afwikkelrol_eenvoudig', label: 'Afwikkelrol eenvoudig', code: 46 },
+  {key: 'individueel', label: 'Supplement individueel', code: 43},
+  {key: 'afwikkelrol_eenvoudig', label: 'Afwikkelrol eenvoudig', code: 46},
   {
     key: 'afwikkelrol_gecompliceerd',
     label: 'Afwikkelrol gecompliceerd',
     code: 47,
   },
-  { key: 'zoolverstijving', label: 'Zoolverstijving', code: 57 },
+  {key: 'zoolverstijving', label: 'Zoolverstijving', code: 57},
 ] as const;
 export type SupplementOption = (typeof SUPPLEMENT_OPTIONS)[number];
 
@@ -216,13 +216,25 @@ export type OvacOmschrijvingItem = {
 };
 
 export const OVAC_OMSCHRIJVING_ITEMS: OvacOmschrijvingItem[] = [
-  { key: 'supplementIndividueel', label: 'Supplement individueel', postNr: '71' },
-  { key: 'eenvoudigeAfwikkelrol', label: 'Eenvoudige afwikkelrol', postNr: '74' },
-  { key: 'gecompliceerdeAfwikkelrol', label: 'Gecompliceerde afwikkelrol', postNr: '75' },
-  { key: 'hakAanpassing2cm', label: 'Hak aanpassing t/m 2 cm', postNr: '76' },
-  { key: 'hakZoolVerhoging3cm', label: 'Hak zool verhoging t/m 3 cm', postNr: '77' },
-  { key: 'hakZoolVerhoging7cm', label: 'Hak zool verhoging t/m 7 cm', postNr: '78' },
-  { key: 'aangepastehakken', label: 'Aangepaste hakken', postNr: '84' },
-  { key: 'zoolverstijving', label: 'Zoolverstijving', postNr: '85' },
-  { key: 'nieuweWreefsluiting', label: 'Nieuwe wreefsluiting', postNr: '88' },
+  {key: 'supplementIndividueel', label: 'Supplement individueel', postNr: '71'},
+  {key: 'eenvoudigeAfwikkelrol', label: 'Eenvoudige afwikkelrol', postNr: '74'},
+  {
+    key: 'gecompliceerdeAfwikkelrol',
+    label: 'Gecompliceerde afwikkelrol',
+    postNr: '75',
+  },
+  {key: 'hakAanpassing2cm', label: 'Hak aanpassing t/m 2 cm', postNr: '76'},
+  {
+    key: 'hakZoolVerhoging3cm',
+    label: 'Hak zool verhoging t/m 3 cm',
+    postNr: '77',
+  },
+  {
+    key: 'hakZoolVerhoging7cm',
+    label: 'Hak zool verhoging t/m 7 cm',
+    postNr: '78',
+  },
+  {key: 'aangepastehakken', label: 'Aangepaste hakken', postNr: '84'},
+  {key: 'zoolverstijving', label: 'Zoolverstijving', postNr: '85'},
+  {key: 'nieuweWreefsluiting', label: 'Nieuwe wreefsluiting', postNr: '88'},
 ];
