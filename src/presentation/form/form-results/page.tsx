@@ -52,31 +52,67 @@ export const FormResultsPage = () => {
 
   // Generate complete JSON with all data and constants
   const generateCompleteJSON = () => {
-    const constants = {
-      practitioners: PRACTITIONERS,
-      locationOptions: LOCATION_OPTIONS,
-      salutationOptions: SALUTATION_OPTIONS,
-      omsluitingOptions: OMSLUITING_OPTIONS,
-      supplementTypes: SUPPLEMENT_TYPES,
-      haksoortOptions: HAKSOORT_OPTIONS,
-      loopzoolOptions: LOOPZOOL_OPTIONS,
-      sluitingOptions: SLUITING_OPTIONS,
-      hakschoringTypes: HAKSCHORING_TYPES,
-      yesNoOptions: YES_NO,
-      openstandOptions: OPENSTAND_OPTIONS,
+    // Resolve practitioner ID to name
+    const resolvedClientData = formData.client
+      ? {
+          ...formData.client,
+          practitionerName:
+            PRACTITIONERS.find(p => p.value === formData.client?.practitionerId)
+              ?.label || formData.client?.practitionerId,
+        }
+      : null;
+
+    // Build result object with only non-null intake forms
+    const result: any = {
+      clientData: resolvedClientData,
     };
 
-    return {
-      clientData: formData.client,
-      intakeVLOS: formData.intakeVLOS,
-      intakePulman: formData.intakePulman,
-      intakeRebacare: formData.intakeRebacare,
-      intakeOSB: formData.intakeOSB,
-      intakeOVAC: formData.intakeOVAC,
-      intakeSteunzolen: formData.intakeSteunzolen,
-      constants,
-      generatedAt: new Date().toISOString(),
-    };
+    // Only include intake forms that have data
+    if (formData.intakeVLOS) {
+      result.intakeVLOS = formData.intakeVLOS;
+    }
+    if (formData.intakePulman) {
+      result.intakePulman = formData.intakePulman;
+    }
+    if (formData.intakeRebacare) {
+      result.intakeRebacare = formData.intakeRebacare;
+    }
+    if (formData.intakeOSB) {
+      result.intakeOSB = formData.intakeOSB;
+    }
+    if (formData.intakeOVAC) {
+      result.intakeOVAC = formData.intakeOVAC;
+    }
+    if (formData.intakeSteunzolen) {
+      result.intakeSteunzolen = formData.intakeSteunzolen;
+    }
+
+    // Only include constants that are used in the filled forms
+    const constants: any = {};
+
+    // Always include practitioner info if we have client data
+    if (formData.client) {
+      constants.practitioners = PRACTITIONERS;
+      constants.locationOptions = LOCATION_OPTIONS;
+      constants.salutationOptions = SALUTATION_OPTIONS;
+    }
+
+    // Include VLOS-specific constants if VLOS form is filled
+    if (formData.intakeVLOS) {
+      constants.omsluitingOptions = OMSLUITING_OPTIONS;
+      constants.supplementTypes = SUPPLEMENT_TYPES;
+      constants.haksoortOptions = HAKSOORT_OPTIONS;
+      constants.loopzoolOptions = LOOPZOOL_OPTIONS;
+      constants.sluitingOptions = SLUITING_OPTIONS;
+      constants.hakschoringTypes = HAKSCHORING_TYPES;
+      constants.yesNoOptions = YES_NO;
+      constants.openstandOptions = OPENSTAND_OPTIONS;
+    }
+
+    result.constants = constants;
+    result.generatedAt = new Date().toISOString();
+
+    return result;
   };
 
   const jsonData = generateCompleteJSON();
