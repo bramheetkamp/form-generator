@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {BaseLayout} from '@/presentation/base/baseLayout';
+import React, { useState } from 'react';
+import { BaseLayout } from '@/presentation/base/baseLayout';
 import {
   Flex,
   FormControl,
@@ -23,12 +23,13 @@ import {
   Radio,
   RadioGroup,
 } from '@chakra-ui/react';
-import {DatePickerField} from '@/presentation/base/input/datePickerField';
+import { DatePickerField } from '@/presentation/base/input/datePickerField';
 
 import useTranslation from 'next-translate/useTranslation';
-import {useRouter} from 'next/router';
-import {useAppDispatch} from '@/domain/store/hooks';
-import {setIntakeOSBData} from '@/domain/store/slices/formData';
+import { useRouter } from 'next/router';
+import { Routes } from '../../routes';
+import { useAppDispatch } from '@/domain/store/hooks';
+import { setIntakeOSBData } from '@/domain/store/slices/formData';
 import {
   PAARTYPE_OPTIONS,
   DOEL_OPTIONS,
@@ -46,7 +47,7 @@ import {
 
 export const FormIntakeOSBPage = () => {
   const router = useRouter();
-  const {t} = useTranslation('form');
+  const { t } = useTranslation('form');
   const dispatch = useAppDispatch();
 
   // Sectie 1: Header & Omschrijving
@@ -92,7 +93,7 @@ export const FormIntakeOSBPage = () => {
   // Sectie 8: Basiscode SOS & Omschrijving
   const [basiscodeSOS, setBasiscodeSOS] = useState<string>('');
   const [supplements, setSupplements] = useState<
-    Record<string, {links: boolean; rechts: boolean; code: number}>
+    Record<string, { links: boolean; rechts: boolean; code: number }>
   >({});
 
   // Sectie 9: Steunzolen (gecombineerd voor beide voeten)
@@ -182,6 +183,9 @@ export const FormIntakeOSBPage = () => {
     );
 
     console.log('Intake OSB data opgeslagen in Redux store');
+
+    // Navigeer naar results page
+    router.push(Routes.form_results);
   };
 
   return (
@@ -194,18 +198,18 @@ export const FormIntakeOSBPage = () => {
         w="full"
         direction="column"
         bg="white"
-        p={{base: 4, md: 6}}
+        p={{ base: 4, md: 6 }}
         borderRadius="md"
-        gap={{base: 4, md: 6}}
+        gap={{ base: 4, md: 6 }}
       >
         {/* Sectie 1: Header & Omschrijving */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('omschrijving')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
-            direction={{base: 'column', md: 'row'}}
+            gap={{ base: 4, md: 6 }}
+            direction={{ base: 'column', md: 'row' }}
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
@@ -223,7 +227,7 @@ export const FormIntakeOSBPage = () => {
                 </Stack>
               </RadioGroup>
             </Box>
-            <FormControl flex={1} maxW={{base: 'full', md: '300px'}}>
+            <FormControl flex={1} maxW={{ base: 'full', md: '300px' }}>
               <FormLabel fontSize="sm">{t('ordernummer')}</FormLabel>
               <Input
                 placeholder={t('ordernummerPlaceholder')}
@@ -239,7 +243,7 @@ export const FormIntakeOSBPage = () => {
 
         {/* Sectie 2: Medische Indicatie */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('medischeIndicatie')}
           </Text>
           <Box
@@ -253,7 +257,7 @@ export const FormIntakeOSBPage = () => {
               placeholder={t('medischeIndicatiePlaceholder')}
               value={medischeIndicatie}
               onChange={e => setMedischeIndicatie(e.target.value)}
-              minH={{base: '80px', md: '100px'}}
+              minH={{ base: '80px', md: '100px' }}
             />
           </Box>
         </Box>
@@ -262,12 +266,12 @@ export const FormIntakeOSBPage = () => {
 
         {/* Sectie 3: Doel */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('doel')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
-            direction={{base: 'column', md: 'row'}}
+            gap={{ base: 4, md: 6 }}
+            direction={{ base: 'column', md: 'row' }}
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
@@ -293,12 +297,12 @@ export const FormIntakeOSBPage = () => {
 
         {/* Sectie 4: Loopfunctie */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('loopfunctie')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
-            direction={{base: 'column', md: 'row'}}
+            gap={{ base: 4, md: 6 }}
+            direction={{ base: 'column', md: 'row' }}
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
@@ -326,12 +330,12 @@ export const FormIntakeOSBPage = () => {
 
         {/* Sectie 5: Leverancier & Bestel Datum */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('leverancier')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
-            direction={{base: 'column', md: 'row'}}
+            gap={{ base: 4, md: 6 }}
+            direction={{ base: 'column', md: 'row' }}
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
@@ -349,7 +353,7 @@ export const FormIntakeOSBPage = () => {
                 </Stack>
               </RadioGroup>
             </Box>
-            <FormControl flex={1} maxW={{base: 'full', md: '300px'}}>
+            <FormControl flex={1} maxW={{ base: 'full', md: '300px' }}>
               <FormLabel fontSize="sm">{t('bestelDatum')}</FormLabel>
               <DatePickerField
                 date={bestelDatum}
@@ -365,11 +369,11 @@ export const FormIntakeOSBPage = () => {
 
         {/* Sectie 6: Product Specificaties */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('productSpecificaties')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
+            gap={{ base: 4, md: 6 }}
             direction="column"
             border="1px solid"
             borderColor="inherit"
@@ -377,7 +381,7 @@ export const FormIntakeOSBPage = () => {
             p={4}
             mt={2}
           >
-            <SimpleGrid columns={{base: 1, md: 2, lg: 3}} spacing={4}>
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
               <FormControl>
                 <FormLabel fontSize="sm">{t('artCode')}</FormLabel>
                 <Input
@@ -432,11 +436,11 @@ export const FormIntakeOSBPage = () => {
 
         {/* Sectie 7: Modules */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('modules')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
+            gap={{ base: 4, md: 6 }}
             direction="column"
             border="1px solid"
             borderColor="inherit"
@@ -576,11 +580,11 @@ export const FormIntakeOSBPage = () => {
 
         {/* Sectie 8: Basiscode SOS & Omschrijving */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('basiscodeSosEnOmschrijving')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
+            gap={{ base: 4, md: 6 }}
             direction="column"
             border="1px solid"
             borderColor="inherit"
@@ -652,11 +656,11 @@ export const FormIntakeOSBPage = () => {
 
         {/* Sectie 9: Steunzolen */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('steunzolen')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
+            gap={{ base: 4, md: 6 }}
             direction="column"
             border="1px solid"
             borderColor="inherit"
@@ -698,7 +702,7 @@ export const FormIntakeOSBPage = () => {
 
             <Divider />
 
-            <SimpleGrid columns={{base: 1, md: 2}} spacing={4}>
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
               <Box>
                 <Text fontSize="sm" fontWeight="medium" mb={2}>
                   {t('correctieMiddenvoet')}
@@ -762,7 +766,7 @@ export const FormIntakeOSBPage = () => {
               <Text fontSize="sm" fontWeight="medium" mb={2}>
                 {t('hakVerhogingCm')}
               </Text>
-              <SimpleGrid columns={{base: 1, sm: 2}} spacing={4}>
+              <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
                 <FormControl>
                   <FormLabel fontSize="sm">{t('links')}</FormLabel>
                   <Input
@@ -796,23 +800,23 @@ export const FormIntakeOSBPage = () => {
 
         {/* Bijzonderheden */}
         <Box>
-          <Text fontWeight="bold" mb={4} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={4} fontSize={{ base: 'md', md: 'lg' }}>
             {t('bijzonderheden')}
           </Text>
           <Textarea
             placeholder={t('bijzonderhedenPlaceholder')}
             value={bijzonderheden}
             onChange={e => setBijzonderheden(e.target.value)}
-            minH={{base: '100px', md: '120px'}}
+            minH={{ base: '100px', md: '120px' }}
           />
         </Box>
 
         {/* Submit button */}
-        <Flex justifyContent={{base: 'stretch', sm: 'flex-end'}} mt={4}>
+        <Flex justifyContent={{ base: 'stretch', sm: 'flex-end' }} mt={4}>
           <Button
             variant="primary"
             onClick={handleSubmit}
-            w={{base: 'full', sm: 'auto'}}
+            w={{ base: 'full', sm: 'auto' }}
           >
             {t('opslaanEnDoorgaan')}
           </Button>
