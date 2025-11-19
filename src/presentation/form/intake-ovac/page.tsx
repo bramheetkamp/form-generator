@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {BaseLayout} from '@/presentation/base/baseLayout';
+import React, { useState } from 'react';
+import { BaseLayout } from '@/presentation/base/baseLayout';
 import {
   Flex,
   FormControl,
@@ -15,73 +15,74 @@ import {
   RadioGroup,
   Button,
   SimpleGrid,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
 } from '@chakra-ui/react';
 
 import useTranslation from 'next-translate/useTranslation';
-import {useRouter} from 'next/router';
-import {useAppDispatch} from '@/domain/store/hooks';
-import {setIntakeOVACData} from '@/domain/store/slices/formData';
+import { useRouter } from 'next/router';
+import { useAppDispatch } from '@/domain/store/hooks';
+import { setIntakeOVACData } from '@/domain/store/slices/formData';
+import { OVAC_OMSCHRIJVING_ITEMS } from '@/presentation/form/constants/formConstants';
 
 export const FormIntakeOVACPage = () => {
   const router = useRouter();
-  const {t} = useTranslation('form');
+  const { t } = useTranslation('form');
   const dispatch = useAppDispatch();
 
-  // State voor proefschoen
-  const [proefschoen, setProefschoen] = useState<string>('nee');
+  // State voor medische indicatie
+  const [medischeIndicatie, setMedischeIndicatie] = useState('');
 
-  // State voor datum
-  const [datum, setDatum] = useState('');
+  // State voor omschrijving items met L/R
+  const [omschrijvingItems, setOmschrijvingItems] = useState<
+    Record<string, { links: boolean; rechts: boolean }>
+  >(
+    OVAC_OMSCHRIJVING_ITEMS.reduce(
+      (acc, item) => ({
+        ...acc,
+        [item.key]: { links: false, rechts: false },
+      }),
+      {}
+    )
+  );
 
-  // State voor diktes
-  const [diktes, setDiktes] = useState('');
+  // State voor verkorting
+  const [verkortingLinks, setVerkortingLinks] = useState(false);
+  const [verkortingRechts, setVerkortingRechts] = useState(false);
 
-  // State voor maatverdeling
-  const [maatverdeling, setMaatverdeling] = useState('');
-
-  // State voor schoen sizes (24-32)
-  const [schoenSizes, setSchoenSizes] = useState<Record<string, boolean>>({
-    '24': false,
-    '25': false,
-    '26': false,
-    '27': false,
-    '28': false,
-    '29': false,
-    '30': false,
-    '31': false,
-    '32': false,
-  });
-
-  // State voor procedures
-  const [vrijstaandSchoentje, setVrijstaandSchoentje] = useState(false);
-  const [voetAfdrukkleusKast, setVoetAfdrukkleusKast] = useState(false);
-  const [bevolktenSchottel, setBevolktenSchottel] = useState(false);
-  const [proefschoeneenGecombineerd, setProefschoeneenGecombineerd] =
-    useState(false);
-  const [bevolktenSchoen, setBevolktenSchoen] = useState(false);
-  const [enkelvolschoen, setEnkelvolschoen] = useState(false);
-  const [enkelvolkastel, setEnkelvolkastel] = useState(false);
+  // State voor voorvoet en hiel
+  const [voorvoetCm, setVoorvoetCm] = useState('');
+  const [hielCm, setHielCm] = useState('');
 
   // State voor bijzonderheden
   const [bijzonderheden, setBijzonderheden] = useState('');
 
+  const toggleOmschrijvingItem = (
+    key: string,
+    side: 'links' | 'rechts'
+  ) => {
+    setOmschrijvingItems(prev => ({
+      ...prev,
+      [key]: {
+        ...prev[key],
+        [side]: !prev[key][side],
+      },
+    }));
+  };
+
   const handleSubmit = () => {
     dispatch(
       setIntakeOVACData({
-        proefschoen: proefschoen as 'ja' | 'nee',
-        datum,
-        diktes,
-        maatverdeling,
-        schoenSizes,
-        procedures: {
-          vrijstaandSchoentje,
-          voetAfdrukkleusKast,
-          bevolktenSchottel,
-          proefschoeneenGecombineerd,
-          bevolktenSchoen,
-          enkelvolschoen,
-          enkelvolkastel,
-        },
+        medischeIndicatie,
+        omschrijvingItems,
+        verkortingLinks,
+        verkortingRechts,
+        voorvoetCm,
+        hielCm,
         bijzonderheden,
       })
     );
@@ -99,205 +100,163 @@ export const FormIntakeOVACPage = () => {
         w="full"
         direction="column"
         bg="white"
-        p={{base: 4, md: 6}}
+        p={{ base: 4, md: 6 }}
         borderRadius="md"
-        gap={{base: 4, md: 6}}
+        gap={{ base: 4, md: 6 }}
       >
-        {/* Proefschoen */}
+        {/* Medische Indicatie */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
-            {t('proefschoen')}
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
+            {t('medischeIndicatie')}
           </Text>
           <Flex
-            gap={{base: 4, md: 6}}
-            direction={{base: 'column', md: 'row'}}
+            gap={{ base: 4, md: 6 }}
+            direction="column"
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
-            align={'center'}
             p={4}
             mt={2}
           >
-            <RadioGroup value={proefschoen} onChange={setProefschoen}>
-              <Stack direction="row" spacing={6}>
-                <Radio value="ja">{t('ja')}</Radio>
-                <Radio value="nee">{t('nee')}</Radio>
-              </Stack>
-            </RadioGroup>
+            <Textarea
+              placeholder={t('medischeIndicatiePlaceholder')}
+              value={medischeIndicatie}
+              onChange={e => setMedischeIndicatie(e.target.value)}
+              minH={{ base: '80px', md: '100px' }}
+            />
           </Flex>
         </Box>
 
         <Divider />
 
-        {/* Datum */}
+        {/* Omschrijving Tabel */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
-            Datum
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
+            Omschrijving
           </Text>
-          <FormControl>
-            <Input
-              type="date"
-              value={datum}
-              onChange={e => setDatum(e.target.value)}
-              size="sm"
-            />
-          </FormControl>
-        </Box>
-
-        <Divider />
-
-        {/* Diktes */}
-        <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
-            Diktes
-          </Text>
-          <FormControl>
-            <Input
-              placeholder="Diktes"
-              value={diktes}
-              onChange={e => setDiktes(e.target.value)}
-              size="sm"
-            />
-          </FormControl>
-        </Box>
-
-        <Divider />
-
-        {/* Maatverdeling */}
-        <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
-            Maatverdeling
-          </Text>
-          <FormControl>
-            <Input
-              placeholder="Maatverdeling"
-              value={maatverdeling}
-              onChange={e => setMaatverdeling(e.target.value)}
-              size="sm"
-            />
-          </FormControl>
-        </Box>
-
-        <Divider />
-
-        {/* Schoen Sizes (24-32) */}
-        <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
-            Maat
-          </Text>
-          <Box
+          <Flex
+            gap={{ base: 4, md: 6 }}
+            direction="column"
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
             p={4}
             mt={2}
           >
-            <SimpleGrid columns={{base: 3, sm: 5, md: 9}} spacing={4}>
-              {Object.keys(schoenSizes).map(size => (
-                <Checkbox
-                  key={size}
-                  isChecked={schoenSizes[size]}
-                  onChange={e =>
-                    setSchoenSizes({...schoenSizes, [size]: e.target.checked})
-                  }
-                  size="sm"
-                >
-                  {size}
-                </Checkbox>
-              ))}
-            </SimpleGrid>
-          </Box>
+            <Box overflowX="auto">
+              <Table size="sm" variant="simple">
+                <Thead>
+                  <Tr>
+                    <Th>Omschrijving</Th>
+                    <Th textAlign="center">Post nr</Th>
+                    <Th textAlign="center">R</Th>
+                    <Th textAlign="center">L</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {OVAC_OMSCHRIJVING_ITEMS.map(item => (
+                    <Tr key={item.key}>
+                      <Td>{item.label}</Td>
+                      <Td textAlign="center">{item.postNr}</Td>
+                      <Td textAlign="center">
+                        <Checkbox
+                          isChecked={omschrijvingItems[item.key]?.rechts || false}
+                          onChange={() => toggleOmschrijvingItem(item.key, 'rechts')}
+                          size="sm"
+                        />
+                      </Td>
+                      <Td textAlign="center">
+                        <Checkbox
+                          isChecked={omschrijvingItems[item.key]?.links || false}
+                          onChange={() => toggleOmschrijvingItem(item.key, 'links')}
+                          size="sm"
+                        />
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </Box>
+          </Flex>
         </Box>
 
         <Divider />
 
-        {/* Procedures */}
+        {/* Verkorting */}
         <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{base: 'md', md: 'lg'}}>
-            Procedures
+          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
+            Verkorting
           </Text>
-          <Box
+          <Flex
+            gap={{ base: 4, md: 6 }}
+            direction={{ base: 'column', md: 'row' }}
             border="1px solid"
             borderColor="inherit"
             borderRadius="md"
             p={4}
             mt={2}
+            align="center"
           >
-            <Stack spacing={3}>
+            <Stack direction="row" spacing={6}>
               <Checkbox
-                isChecked={vrijstaandSchoentje}
-                onChange={e => setVrijstaandSchoentje(e.target.checked)}
-                size="sm"
+                isChecked={verkortingRechts}
+                onChange={e => setVerkortingRechts(e.target.checked)}
               >
-                Vrijstaand schoentje
+                R
               </Checkbox>
               <Checkbox
-                isChecked={voetAfdrukkleusKast}
-                onChange={e => setVoetAfdrukkleusKast(e.target.checked)}
-                size="sm"
+                isChecked={verkortingLinks}
+                onChange={e => setVerkortingLinks(e.target.checked)}
               >
-                Voetafdruk kleus kast
-              </Checkbox>
-              <Checkbox
-                isChecked={bevolktenSchottel}
-                onChange={e => setBevolktenSchottel(e.target.checked)}
-                size="sm"
-              >
-                Bevolkten schottel
-              </Checkbox>
-              <Checkbox
-                isChecked={proefschoeneenGecombineerd}
-                onChange={e => setProefschoeneenGecombineerd(e.target.checked)}
-                size="sm"
-              >
-                Proefschoen een gecombineerd
-              </Checkbox>
-              <Checkbox
-                isChecked={bevolktenSchoen}
-                onChange={e => setBevolktenSchoen(e.target.checked)}
-                size="sm"
-              >
-                Bevolkten schoen
-              </Checkbox>
-              <Checkbox
-                isChecked={enkelvolschoen}
-                onChange={e => setEnkelvolschoen(e.target.checked)}
-                size="sm"
-              >
-                Enkelvol schoen
-              </Checkbox>
-              <Checkbox
-                isChecked={enkelvolkastel}
-                onChange={e => setEnkelvolkastel(e.target.checked)}
-                size="sm"
-              >
-                Enkelvol kastel
+                L
               </Checkbox>
             </Stack>
-          </Box>
+            <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4} flex={1}>
+              <FormControl>
+                <FormLabel fontSize="sm">Voorvoet (cm)</FormLabel>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={voorvoetCm}
+                  onChange={e => setVoorvoetCm(e.target.value)}
+                  size="sm"
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel fontSize="sm">Hiel (cm)</FormLabel>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={hielCm}
+                  onChange={e => setHielCm(e.target.value)}
+                  size="sm"
+                />
+              </FormControl>
+            </SimpleGrid>
+          </Flex>
         </Box>
 
         <Divider />
 
         {/* Bijzonderheden */}
         <Box>
-          <Text fontWeight="bold" mb={4} fontSize={{base: 'md', md: 'lg'}}>
+          <Text fontWeight="bold" mb={4} fontSize={{ base: 'md', md: 'lg' }}>
             {t('bijzonderheden')}
           </Text>
           <Textarea
             placeholder={t('bijzonderhedenPlaceholder')}
             value={bijzonderheden}
             onChange={e => setBijzonderheden(e.target.value)}
-            minH={{base: '100px', md: '120px'}}
+            minH={{ base: '100px', md: '120px' }}
           />
         </Box>
 
         {/* Submit button */}
-        <Flex justifyContent={{base: 'stretch', sm: 'flex-end'}} mt={4}>
+        <Flex justifyContent={{ base: 'stretch', sm: 'flex-end' }} mt={4}>
           <Button
             variant="primary"
             onClick={handleSubmit}
-            w={{base: 'full', sm: 'auto'}}
+            w={{ base: 'full', sm: 'auto' }}
           >
             Opslaan en doorgaan
           </Button>

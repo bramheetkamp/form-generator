@@ -193,7 +193,7 @@ export interface IntakeOSBData {
 
   // Basiscode SOS & Omschrijving (tabel met L/R)
   basiscodeSOS?: string[]; // Array of selected basiscodes
-  supplements?: Record<string, {links: boolean; rechts: boolean; code: number}>;
+  supplements?: Record<string, { links: boolean; rechts: boolean; code: number }>;
 
   // Steunzolen component (reusable)
   steunzoolLinks?: {
