@@ -114,11 +114,19 @@ export const FormResultsPage = () => {
 
     // Generate medical codes if applicable
     if (formData.client && (formData.intakeVLOS || formData.intakeOSA)) {
-      const intakeData = formData.intakeVLOS || formData.intakeOSA;
-      const { codes, warnings } = generateCodes(formData.client, intakeData);
+      const { codes, warnings } = generateCodes(formData.client, {
+        intakeVLOS: formData.intakeVLOS,
+        intakeOSA: formData.intakeOSA,
+        intakePulman: formData.intakePulman,
+        intakeRebacare: formData.intakeRebacare,
+        intakeOSB: formData.intakeOSB,
+        intakeOVAC: formData.intakeOVAC,
+        intakeSteunzolen: formData.intakeSteunzolen,
+      });
 
-      // Spread individual code boolean keys into result for Word compatibility
-      Object.assign(result, codes);
+      // Normalize and spread individual code boolean keys into result for Word compatibility
+      const normalizedCodes = normalizeObject(codes);
+      Object.assign(result, normalizedCodes);
 
       // Add warnings if any
       if (warnings.length > 0) {

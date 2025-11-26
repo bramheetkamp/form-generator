@@ -1,19 +1,18 @@
 /**
  * Medical Code Generation System for VLOS and OSA intake forms
  * 
- * Generates individual boolean keys for each code (code01Links, code01Rechts, etc.)
- * for Word document mail merge compatibility.
+ * Generates boolean keys for medical codes for Word document mail merge.
  * 
  * Code definitions:
- * - 1: VLOS links eerste paar
- * - 2: VLOS rechts/beide eerste paar
- * - 3: Laag OSA links (<12cm schachthoogte) eerste paar
- * - 4: Laag OSA rechts/beide (<12cm schachthoogte) eerste paar
- * - 5: Half-hoog OSA links (12-18cm schachthoogte) eerste paar
- * - 6: Half-hoog OSA rechts/beide (12-18cm schachthoogte) eerste paar
- * - 7: Hoog OSA links (>18cm schachthoogte) eerste paar
- * - 8: Hoog OSA rechts/beide (>18cm schachthoogte) eerste paar
- * - 9: Proefschoen VLOS (auto-generated with VLOS codes)
+ * - 1: VLOS voor één kant (links OF rechts)
+ * - 2: VLOS voor beide kanten
+ * - 3: Laag OSA (<12cm schachthoogte) voor één kant
+ * - 4: Laag OSA (<12cm schachthoogte) voor beide kanten
+ * - 5: Half-hoog OSA (12-18cm schachthoogte) voor één kant
+ * - 6: Half-hoog OSA (12-18cm schachthoogte) voor beide kanten
+ * - 7: Hoog OSA (>18cm schachthoogte) voor één kant
+ * - 8: Hoog OSA (>18cm schachthoogte) voor beide kanten
+ * - 9: Proefschoen (auto-generated with VLOS/OSA) per side
  * - 10: (placeholder - not implemented)
  * - 11: (placeholder - not implemented)
  * - 14: Aanvulling lengte/breedte (placeholder - not implemented)
@@ -26,22 +25,14 @@
 import { ClientData, IntakeVLOSData, IntakeOSAData } from '@/presentation/form/types/formData';
 
 export interface GeneratedCodes {
-    code01Links: boolean;
-    code01Rechts: boolean;
-    code02Links: boolean;
-    code02Rechts: boolean;
-    code03Links: boolean;
-    code03Rechts: boolean;
-    code04Links: boolean;
-    code04Rechts: boolean;
-    code05Links: boolean;
-    code05Rechts: boolean;
-    code06Links: boolean;
-    code06Rechts: boolean;
-    code07Links: boolean;
-    code07Rechts: boolean;
-    code08Links: boolean;
-    code08Rechts: boolean;
+    code01: boolean;
+    code02: boolean;
+    code03: boolean;
+    code04: boolean;
+    code05: boolean;
+    code06: boolean;
+    code07: boolean;
+    code08: boolean;
     code09Links: boolean;
     code09Rechts: boolean;
     code10Links: boolean;
@@ -80,22 +71,14 @@ interface IntakeFormData {
  */
 function initializeCodes(): GeneratedCodes {
     return {
-        code01Links: false,
-        code01Rechts: false,
-        code02Links: false,
-        code02Rechts: false,
-        code03Links: false,
-        code03Rechts: false,
-        code04Links: false,
-        code04Rechts: false,
-        code05Links: false,
-        code05Rechts: false,
-        code06Links: false,
-        code06Rechts: false,
-        code07Links: false,
-        code07Rechts: false,
-        code08Links: false,
-        code08Rechts: false,
+        code01: false,
+        code02: false,
+        code03: false,
+        code04: false,
+        code05: false,
+        code06: false,
+        code07: false,
+        code08: false,
         code09Links: false,
         code09Rechts: false,
         code10Links: false,
@@ -146,20 +129,12 @@ function generateVLOSCodes(
     const hasRechts = side === 'rechts' || side === 'beide';
 
     // Code 1/2: VLOS base codes
-    if (hasLinks) {
-        if (isEerste) {
-            codes.code01Links = true;
-        } else {
-            codes.code02Links = true;
-        }
-    }
-
-    if (hasRechts) {
-        if (isEerste) {
-            codes.code01Rechts = true;
-        } else {
-            codes.code02Rechts = true;
-        }
+    // Code 1 = één VLOS (links OF rechts)
+    // Code 2 = VLOS voor beide kanten
+    if (side === 'beide') {
+        codes.code02 = true;
+    } else {
+        codes.code01 = true;
     }
 
     // Code 9: Proefschoen (auto-generated with VLOS)
@@ -231,38 +206,24 @@ function generateOSACodes(
     // < 12cm = laag (codes 3/4)
     // 12-18cm = half-hoog (codes 5/6)
     // > 18cm = hoog (codes 7/8)
+    // Odd code (3/5/7) = één kant, Even code (4/6/8) = beide kanten
 
-    if (hasLinks) {
-        if (heightLinks < 12) {
+    const maxHeight = side === 'beide' ? Math.max(heightLinks, heightRechts) : (side === 'links' ? heightLinks : heightRechts);
+
+    if (maxHeight === 0) {
+        warnings.push('OSA schachthoogte is niet ingevuld');
+    } else {
+        const isOneSide = side !== 'beide';
+
+        if (maxHeight < 12) {
             // Laag OSA
-            codes[isEerste ? 'code03Links' : 'code04Links'] = true;
-        } else if (heightLinks <= 18) {
+            codes[isOneSide ? 'code03' : 'code04'] = true;
+        } else if (maxHeight <= 18) {
             // Half-hoog OSA
-            codes[isEerste ? 'code05Links' : 'code06Links'] = true;
+            codes[isOneSide ? 'code05' : 'code06'] = true;
         } else {
             // Hoog OSA
-            codes[isEerste ? 'code07Links' : 'code08Links'] = true;
-        }
-
-        if (heightLinks === 0) {
-            warnings.push('OSA schachthoogte links is niet ingevuld');
-        }
-    }
-
-    if (hasRechts) {
-        if (heightRechts < 12) {
-            // Laag OSA
-            codes[isEerste ? 'code03Rechts' : 'code04Rechts'] = true;
-        } else if (heightRechts <= 18) {
-            // Half-hoog OSA
-            codes[isEerste ? 'code05Rechts' : 'code06Rechts'] = true;
-        } else {
-            // Hoog OSA
-            codes[isEerste ? 'code07Rechts' : 'code08Rechts'] = true;
-        }
-
-        if (heightRechts === 0) {
-            warnings.push('OSA schachthoogte rechts is niet ingevuld');
+            codes[isOneSide ? 'code07' : 'code08'] = true;
         }
     }
 
