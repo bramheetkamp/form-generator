@@ -114,7 +114,7 @@ export const FormResultsPage = () => {
 
     // Generate medical codes if applicable
     if (formData.client && (formData.intakeVLOS || formData.intakeOSA)) {
-      const { codes, warnings } = generateCodes(formData.client, {
+      const { codes, warnings, generalBasiscode } = generateCodes(formData.client, {
         intakeVLOS: formData.intakeVLOS,
         intakeOSA: formData.intakeOSA,
         intakePulman: formData.intakePulman,
@@ -126,6 +126,16 @@ export const FormResultsPage = () => {
 
       // Group normalized codes under medicalCodes object
       result.medicalCodes = normalizeObject(codes);
+
+      // Add generalBasiscode to the appropriate intake data
+      if (generalBasiscode) {
+        if (formData.intakeVLOS && result.intakeVLOS) {
+          result.intakeVLOS.generalBasiscode = generalBasiscode;
+        }
+        if (formData.intakeOSA && result.intakeOSA) {
+          result.intakeOSA.generalBasiscode = generalBasiscode;
+        }
+      }
 
       // Add warnings if any
       if (warnings.length > 0) {

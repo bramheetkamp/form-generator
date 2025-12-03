@@ -50,24 +50,29 @@ export const FormIntakeSteunzolenPage = () => {
   // State voor schoenmaat (required)
   const [schoenmaat, setSchoenmaat] = useState<string>('');
 
-  // State voor steunzool types (checkboxes)
-  const [steunzoolType, setSteunzoolType] = useState<Record<string, boolean>>({});
+  // State voor steunzool type (single select)
+  const [steunzoolTypeGeneral, setSteunzoolTypeGeneral] = useState<string>('');
 
   // State voor Anders option
-  const [steunzoolAnders, setSteunzoolAnders] = useState<boolean>(false);
   const [steunzoolAndersText, setSteunzoolAndersText] = useState<string>('');
 
   // State voor correcties
-  const [correctieMiddenvoet, setCorrectieMiddenvoet] = useState<string>('');
-  const [correctieVoorvoet, setCorrectieVoorvoet] = useState<string>('');
-  const [pellote, setPellote] = useState<string>('');
-  const [hakverhoging, setHakverhoging] = useState<string>('');
+  const [steunzoolCorrectieMiddenvoet, setSteunzoolCorrectieMiddenvoet] = useState<string>('');
+  const [steunzoolCorrectieVoorvoet, setSteunzoolCorrectieVoorvoet] = useState<string>('');
+  const [steunzoolVvPellote, setSteunzoolVvPellote] = useState<string>('');
+  const [steunzoolHakVerhogingLinks, setSteunzoolHakVerhogingLinks] = useState<string>('');
+  const [steunzoolHakVerhogingRechts, setSteunzoolHakVerhogingRechts] = useState<string>('');
 
-  // State voor prijs (required)
-  const [prijs, setPrijs] = useState<string>('steunzolen225');
+  // State voor prijs (required) - numeric
+  const [prijs, setPrijs] = useState<number>(225);
+  const [prijsNaam, setPrijsNaam] = useState<string>(t('prijsSteunzolen225'));
 
   // State voor bijzonderheden
   const [bijzonderheden, setBijzonderheden] = useState<string>('');
+
+  // Check if Talonette is selected by checking if the selected price matches the Talonette option
+  const talonetteOption = STEUNZOLEN_PRIJS_OPTIES.find(opt => opt.label === 'prijsTalonette');
+  const isTalonette = talonetteOption && prijs === talonetteOption.value;
 
   // Validation: check which required fields are missing
   const getMissingFields = (): string[] => {
@@ -77,16 +82,27 @@ export const FormIntakeSteunzolenPage = () => {
       missing.push(t('schoenmaat'));
     }
 
-    // Check if at least one steunzool type is selected OR Anders is filled
-    const hasAtLeastOneSteunzoolType = Object.values(steunzoolType).some(value => value === true);
-    const hasAndersWithText = steunzoolAnders && steunzoolAndersText.trim();
+    // Only check steunzool type if NOT Talonette
+    if (!isTalonette) {
+      if (!steunzoolTypeGeneral.trim()) {
+        missing.push(t('steunzoolTypeGeneral'));
+      }
 
-    if (!hasAtLeastOneSteunzoolType && !hasAndersWithText) {
-      missing.push(t('steunzoolTypeOfAnders'));
+      // If Anders is selected, check if text is provided
+      if (steunzoolTypeGeneral === 'Anders' && !steunzoolAndersText.trim()) {
+        missing.push(t('steunzoolAndersText'));
+      }
+    }
+
+    //If is Talonette, check the Hak Verhoging fields
+    if (isTalonette) {
+      if (!steunzoolHakVerhogingLinks.trim() && !steunzoolHakVerhogingRechts.trim()) {
+        missing.push(t('steunzoolHakVerhogingCm'));
+      }
     }
 
     if (!prijs) {
-      missing.push(t('prijs'));
+      missing.push(t('steunzoolPrijs'));
     }
 
     return missing;
@@ -109,14 +125,14 @@ export const FormIntakeSteunzolenPage = () => {
         welkPaar,
         medischeIndicatie,
         schoenmaat,
-        steunzoolType,
-        steunzoolAnders,
-        steunzoolAndersText,
-        correctieMiddenvoet,
-        correctieVoorvoet,
-        pellote,
-        hakverhoging,
+        steunzoolTypeGeneral: steunzoolTypeGeneral === 'Anders' ? steunzoolAndersText : steunzoolTypeGeneral,
+        steunzoolCorrectieMiddenvoet,
+        steunzoolCorrectieVoorvoet,
+        steunzoolVvPellote,
+        steunzoolHakVerhogingLinks,
+        steunzoolHakVerhogingRechts,
         prijs,
+        prijsNaam,
         bijzonderheden,
       })
     );
@@ -141,20 +157,6 @@ export const FormIntakeSteunzolenPage = () => {
         borderRadius="md"
         gap={{ base: 4, md: 6 }}
       >
-        {!areAllFieldsValid && (
-          <Alert status="warning" borderRadius="md">
-            <AlertIcon />
-            <Box>
-              <Text fontWeight="bold" mb={2}>{t('vulVerplichteVeldenIn')}</Text>
-              <UnorderedList>
-                {getMissingFields().map((field, index) => (
-                  <ListItem key={index}>{field}</ListItem>
-                ))}
-              </UnorderedList>
-            </Box>
-          </Alert>
-        )}
-
         <Box>
           <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
             {t('welkPaar')}
@@ -223,9 +225,10 @@ export const FormIntakeSteunzolenPage = () => {
 
         <Divider />
 
+        {/* Prijs moet eerst komen */}
         <Box>
           <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
-            {t('steunzolen')} *
+            {t('steunzoolPrijs')} *
           </Text>
           <Box
             border="1px solid"
@@ -234,133 +237,14 @@ export const FormIntakeSteunzolenPage = () => {
             p={4}
             mt={2}
           >
-            <Stack spacing={4}>
-              <Box>
-                <Text fontWeight="semibold" mb={2} fontSize="sm">
-                  {t('typeSteunzolen')}
-                </Text>
-                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
-                  {STEUNZOOL_TYPE_OPTIES.filter(option => option.value !== 'Anders').map(option => (
-                    <Checkbox
-                      key={option.value}
-                      isChecked={steunzoolType[option.value] || false}
-                      onChange={e =>
-                        setSteunzoolType({
-                          ...steunzoolType,
-                          [option.value]: e.target.checked,
-                        })
-                      }
-                      size="sm"
-                    >
-                      {t(option.label)}
-                    </Checkbox>
-                  ))}
-                </SimpleGrid>
-                <Box mt={3}>
-                  <Checkbox
-                    isChecked={steunzoolAnders}
-                    onChange={e => setSteunzoolAnders(e.target.checked)}
-                    size="sm"
-                  >
-                    {t('anders')}
-                  </Checkbox>
-                  {steunzoolAnders && (
-                    <Input
-                      placeholder={t('andersSpecificatiePlaceholder')}
-                      value={steunzoolAndersText}
-                      onChange={e => setSteunzoolAndersText(e.target.value)}
-                      size="sm"
-                      mt={2}
-                    />
-                  )}
-                </Box>
-              </Box>
-
-              <Divider />
-
-              <Box>
-                <Text fontWeight="semibold" mb={2} fontSize="sm">
-                  {t('correctieMiddenvoet')}
-                </Text>
-                <RadioGroup value={correctieMiddenvoet} onChange={setCorrectieMiddenvoet}>
-                  <Stack spacing={2}>
-                    {CORRECTIE_MIDDENVOET_OPTIES.map(option => (
-                      <Radio key={option.value} value={option.value} size="sm">
-                        {t(option.label)}
-                      </Radio>
-                    ))}
-                  </Stack>
-                </RadioGroup>
-              </Box>
-
-              <Divider />
-
-              <Box>
-                <Text fontWeight="semibold" mb={2} fontSize="sm">
-                  {t('correctieVoorvoet')}
-                </Text>
-                <RadioGroup value={correctieVoorvoet} onChange={setCorrectieVoorvoet}>
-                  <Stack spacing={2}>
-                    {CORRECTIE_VOORVOET_OPTIES.map(option => (
-                      <Radio key={option.value} value={option.value} size="sm">
-                        {t(option.label)}
-                      </Radio>
-                    ))}
-                  </Stack>
-                </RadioGroup>
-              </Box>
-
-              <Divider />
-
-              <Box>
-                <Text fontWeight="semibold" mb={2} fontSize="sm">
-                  {t('pellote')}
-                </Text>
-                <RadioGroup value={pellote} onChange={setPellote}>
-                  <Stack spacing={2}>
-                    {PELLOTE_OPTIES.map(option => (
-                      <Radio key={option.value} value={option.value} size="sm">
-                        {t(option.label)}
-                      </Radio>
-                    ))}
-                  </Stack>
-                </RadioGroup>
-              </Box>
-
-              <Divider />
-
-              <Box>
-                <Text fontWeight="semibold" mb={2} fontSize="sm">
-                  {t('hakverhoging')}
-                </Text>
-                <Input
-                  placeholder={t('hakverhogingPlaceholder')}
-                  value={hakverhoging}
-                  onChange={e => setHakverhoging(e.target.value)}
-                  size="sm"
-                />
-              </Box>
-            </Stack>
-          </Box>
-        </Box>
-
-        <Divider />
-
-        <Box>
-          <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
-            {t('prijs')} *
-          </Text>
-          <Box
-            border="1px solid"
-            borderColor="inherit"
-            borderRadius="md"
-            p={4}
-            mt={2}
-          >
-            <RadioGroup value={prijs} onChange={setPrijs}>
+            <RadioGroup value={prijs.toString()} onChange={(val) => {
+              setPrijs(Number(val));
+              const selectedOption = STEUNZOLEN_PRIJS_OPTIES.find(opt => opt.value === Number(val));
+              if (selectedOption) setPrijsNaam(t(selectedOption.label));
+            }}>
               <Stack spacing={3}>
                 {STEUNZOLEN_PRIJS_OPTIES.map(option => (
-                  <Radio key={option.value} value={option.value} size="sm">
+                  <Radio key={option.value} value={option.value.toString()} size="sm">
                     {t(option.label)}
                   </Radio>
                 ))}
@@ -368,6 +252,174 @@ export const FormIntakeSteunzolenPage = () => {
             </RadioGroup>
           </Box>
         </Box>
+
+        {!isTalonette && (
+          <>
+            <Divider />
+
+            <Box>
+              <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
+                {t('steunzolen')} *
+              </Text>
+              <Box
+                border="1px solid"
+                borderColor="inherit"
+                borderRadius="md"
+                p={4}
+                mt={2}
+              >
+                <Stack spacing={4}>
+                  <Box>
+                    <Text fontWeight="semibold" mb={2} fontSize="sm">
+                      {t('steunzoolTypeGeneral')}
+                    </Text>
+                    <RadioGroup value={steunzoolTypeGeneral} onChange={setSteunzoolTypeGeneral}>
+                      <Stack spacing={2}>
+                        {STEUNZOOL_TYPE_OPTIES.map(option => (
+                          <Radio key={option.value} value={option.value} size="sm">
+                            {option.label}
+                          </Radio>
+                        ))}
+                      </Stack>
+                    </RadioGroup>
+                    {steunzoolTypeGeneral === 'Anders' && (
+                      <Input
+                        placeholder={t('steunzoolAndersTextPlaceholder')}
+                        value={steunzoolAndersText}
+                        onChange={e => setSteunzoolAndersText(e.target.value)}
+                        size="sm"
+                        mt={3}
+                      />
+                    )}
+                  </Box>
+
+                  <Divider />
+
+                  <Box>
+                    <Text fontWeight="semibold" mb={2} fontSize="sm">
+                      {t('steunzoolCorrectieMiddenvoet')}
+                    </Text>
+                    <RadioGroup value={steunzoolCorrectieMiddenvoet} onChange={setSteunzoolCorrectieMiddenvoet}>
+                      <Stack spacing={2}>
+                        {CORRECTIE_MIDDENVOET_OPTIES.map(option => (
+                          <Radio key={option.value} value={option.value} size="sm">
+                            {option.label}
+                          </Radio>
+                        ))}
+                      </Stack>
+                    </RadioGroup>
+                  </Box>
+
+                  <Divider />
+
+                  <Box>
+                    <Text fontWeight="semibold" mb={2} fontSize="sm">
+                      {t('steunzoolCorrectieVoorvoet')}
+                    </Text>
+                    <RadioGroup value={steunzoolCorrectieVoorvoet} onChange={setSteunzoolCorrectieVoorvoet}>
+                      <Stack spacing={2}>
+                        {CORRECTIE_VOORVOET_OPTIES.map(option => (
+                          <Radio key={option.value} value={option.value} size="sm">
+                            {option.label}
+                          </Radio>
+                        ))}
+                      </Stack>
+                    </RadioGroup>
+                  </Box>
+
+                  <Divider />
+
+                  <Box>
+                    <Text fontWeight="semibold" mb={2} fontSize="sm">
+                      {t('steunzoolVvPellote')}
+                    </Text>
+                    <RadioGroup value={steunzoolVvPellote} onChange={setSteunzoolVvPellote}>
+                      <Stack spacing={2}>
+                        {PELLOTE_OPTIES.map(option => (
+                          <Radio key={option.value} value={option.value} size="sm">
+                            {option.label}
+                          </Radio>
+                        ))}
+                      </Stack>
+                    </RadioGroup>
+                  </Box>
+
+                  <Divider />
+
+                  <Box>
+                    <Text fontWeight="semibold" mb={2} fontSize="sm">
+                      {t('steunzoolHakVerhogingCm')}
+                    </Text>
+                    <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
+                      <FormControl>
+                        <FormLabel fontSize="sm">{t('links')}</FormLabel>
+                        <Input
+                          type="number"
+                          placeholder={t('hakVerhogingPlaceholder')}
+                          value={steunzoolHakVerhogingLinks}
+                          onChange={e => setSteunzoolHakVerhogingLinks(e.target.value)}
+                          size="sm"
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <FormLabel fontSize="sm">{t('rechts')}</FormLabel>
+                        <Input
+                          type="number"
+                          placeholder={t('hakVerhogingPlaceholder')}
+                          value={steunzoolHakVerhogingRechts}
+                          onChange={e => setSteunzoolHakVerhogingRechts(e.target.value)}
+                          size="sm"
+                        />
+                      </FormControl>
+                    </SimpleGrid>
+                  </Box>
+                </Stack>
+              </Box>
+            </Box>
+          </>
+        )}
+
+        {isTalonette && (
+          <>
+            <Divider />
+
+            <Box>
+              <Text fontWeight="bold" mb={3} fontSize={{ base: 'md', md: 'lg' }}>
+                {t('steunzoolHakVerhogingCm')}
+              </Text>
+              <Box
+                border="1px solid"
+                borderColor="inherit"
+                borderRadius="md"
+                p={4}
+                mt={2}
+              >
+                <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
+                  <FormControl>
+                    <FormLabel fontSize="sm">{t('links')}</FormLabel>
+                    <Input
+                      type="number"
+                      placeholder={t('hakVerhogingPlaceholder')}
+                      value={steunzoolHakVerhogingLinks}
+                      onChange={e => setSteunzoolHakVerhogingLinks(e.target.value)}
+                      size="sm"
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel fontSize="sm">{t('rechts')}</FormLabel>
+                    <Input
+                      type="number"
+                      placeholder={t('hakVerhogingPlaceholder')}
+                      value={steunzoolHakVerhogingRechts}
+                      onChange={e => setSteunzoolHakVerhogingRechts(e.target.value)}
+                      size="sm"
+                    />
+                  </FormControl>
+                </SimpleGrid>
+              </Box>
+            </Box>
+          </>
+        )}
 
         <Divider />
 
@@ -382,6 +434,20 @@ export const FormIntakeSteunzolenPage = () => {
             minH={{ base: '100px', md: '120px' }}
           />
         </Box>
+
+        {!areAllFieldsValid && (
+          <Alert status="warning" borderRadius="md">
+            <AlertIcon />
+            <Box>
+              <Text fontWeight="bold" mb={2}>{t('vulVerplichteVeldenIn')}</Text>
+              <UnorderedList>
+                {getMissingFields().map((field, index) => (
+                  <ListItem key={index}>{field}</ListItem>
+                ))}
+              </UnorderedList>
+            </Box>
+          </Alert>
+        )}
 
         <Flex justifyContent={{ base: 'stretch', sm: 'flex-end' }} mt={4}>
           <Button

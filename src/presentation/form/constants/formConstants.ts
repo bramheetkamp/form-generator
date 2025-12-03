@@ -326,11 +326,11 @@ export const OVAC_OMSCHRIJVING_ITEMS: OvacOmschrijvingItem[] = [
   { key: 'nieuweWreefsluiting', label: 'Nieuwe wreefsluiting', postNr: '88' },
 ];
 
-// Steunzolen pricing options
-export type SteunzolenPrijs = 'tot15jaar' | 'steunzolen225' | 'binnen3maanden' | 'talonette';
+// Steunzolen pricing options - numeric values
+export type SteunzolenPrijs = 175 | 225 | 195 | 29;
 export const STEUNZOLEN_PRIJS_OPTIES = [
-  { label: 'prijsTot15Jaar', value: 'tot15jaar' },
-  { label: 'prijsSteunzolen225', value: 'steunzolen225' },
-  { label: 'prijsBinnen3Maanden', value: 'binnen3maanden' },
-  { label: 'prijsTalonette', value: 'talonette' },
+  { label: 'prijsTot15Jaar', value: 175 },
+  { label: 'prijsSteunzolen225', value: 225 },
+  { label: 'prijsBinnen3Maanden', value: 195 },
+  { label: 'prijsTalonette', value: 29 },
 ];

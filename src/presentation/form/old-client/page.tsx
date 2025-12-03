@@ -14,6 +14,8 @@ import {
   RadioGroup,
   Alert,
   AlertIcon,
+  UnorderedList,
+  ListItem,
 } from '@chakra-ui/react';
 import useTranslation from 'next-translate/useTranslation';
 import { useRouter } from 'next/router';
@@ -72,18 +74,37 @@ export const FormOldClientPage = () => {
   const [phoneOne, setPhoneOne] = useState(existingClient?.phoneOne || '');
   const [phoneTwo, setPhoneTwo] = useState(existingClient?.phoneTwo || '');
 
-  // Required: behandelaar, datum, locatie, voorletters, achternaam, geboortedatum
-  const areTopSectionsValid =
-    !!practitionerId &&
-    !!date &&
-    !!location &&
-    initials.trim().length > 0 &&
-    clientName.trim().length > 0 &&
-    birthDate.length > 0;
+  // Validation: check which required fields are missing
+  const getMissingFields = (): string[] => {
+    const missing: string[] = [];
+
+    if (!practitionerId) {
+      missing.push(t('behandelaar'));
+    }
+    if (!date) {
+      missing.push(t('aanmeetdatum'));
+    }
+    if (!location) {
+      missing.push(t('locatie'));
+    }
+    if (!initials.trim()) {
+      missing.push(t('voorletters'));
+    }
+    if (!clientName.trim()) {
+      missing.push(t('achternaam'));
+    }
+    if (!birthDate) {
+      missing.push(t('geboortedatum'));
+    }
+
+    return missing;
+  };
+
+  const areAllFieldsValid = getMissingFields().length === 0;
 
   const handleSubmit = () => {
-    if (!areTopSectionsValid) {
-      return;
+    if (!areAllFieldsValid) {
+      return; // Validation alert will show the missing fields
     }
     dispatch(
       setClientData({
@@ -424,16 +445,28 @@ export const FormOldClientPage = () => {
             </Flex>
           </Flex>
         </Box>
+
+        {!areAllFieldsValid && (
+          <Alert status="warning" borderRadius="md">
+            <AlertIcon />
+            <Box>
+              <Text fontWeight="bold" mb={2}>{t('vulVerplichteVeldenIn')}</Text>
+              <UnorderedList>
+                {getMissingFields().map((field, index) => (
+                  <ListItem key={index}>{field}</ListItem>
+                ))}
+              </UnorderedList>
+            </Box>
+          </Alert>
+        )}
+
         <Flex justifyContent={{ base: 'stretch', sm: 'flex-end' }} mt={4}>
           <Button
             variant="primary"
             onClick={handleSubmit}
             w={{ base: 'full', sm: 'auto' }}
-            isDisabled={!areTopSectionsValid}
           >
-            {areTopSectionsValid
-              ? t('opslaanEnDoorgaan')
-              : 'Vul verplichte velden in'}
+            {t('opslaanEnDoorgaan')}
           </Button>
         </Flex>
       </Flex>

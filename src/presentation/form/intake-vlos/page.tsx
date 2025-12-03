@@ -16,6 +16,10 @@ import {
   RadioGroup,
   Button,
   Image,
+  Alert,
+  AlertIcon,
+  UnorderedList,
+  ListItem,
 } from '@chakra-ui/react';
 
 import useTranslation from 'next-translate/useTranslation';
@@ -160,7 +164,20 @@ export const FormIntakeVLOSPage = () => {
   const stringToBool = (value: string): boolean => value === 'ja';
 
   // Handler om terug te gaan (optioneel: data opslaan in localStorage/sessionStorage)
+  // Validation: check which required fields are missing
+  const getMissingFields = (): string[] => {
+    const missing: string[] = [];
+    // No required fields for VLOS
+    return missing;
+  };
+
+  const areAllFieldsValid = getMissingFields().length === 0;
+
   const handleSubmit = () => {
+    if (!areAllFieldsValid) {
+      return; // Validation alert will show the missing fields
+    }
+
     // Update client data with intake type
     if (clientData) {
       dispatch(setClientData({ ...clientData, intakeType: 'VLOS' }));
@@ -1240,6 +1257,20 @@ export const FormIntakeVLOSPage = () => {
             minH={{ base: '100px', md: '120px' }}
           />
         </Box>
+
+        {!areAllFieldsValid && (
+          <Alert status="warning" borderRadius="md">
+            <AlertIcon />
+            <Box>
+              <Text fontWeight="bold" mb={2}>{t('vulVerplichteVeldenIn')}</Text>
+              <UnorderedList>
+                {getMissingFields().map((field, index) => (
+                  <ListItem key={index}>{field}</ListItem>
+                ))}
+              </UnorderedList>
+            </Box>
+          </Alert>
+        )}
 
         {/* Submit button */}
         <Flex justifyContent={{ base: 'stretch', sm: 'flex-end' }} mt={4}>

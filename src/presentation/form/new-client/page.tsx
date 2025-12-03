@@ -14,6 +14,8 @@ import {
   RadioGroup,
   Alert,
   AlertIcon,
+  UnorderedList,
+  ListItem,
 } from '@chakra-ui/react';
 import useTranslation from 'next-translate/useTranslation';
 import { useRouter } from 'next/router';
@@ -58,27 +60,64 @@ export const FormNewClientPage = () => {
   const [phoneTwo, setPhoneTwo] = useState('');
   const [specialist, setSpecialist] = useState('');
 
-  // All fields are required for new client
-  const areAllFieldsValid =
-    !!practitionerId &&
-    !!date &&
-    !!location &&
-    !!salutation &&
-    initials.trim().length > 0 &&
-    clientName.trim().length > 0 &&
-    birthDate.length > 0 &&
-    address.trim().length > 0 &&
-    postalCode.trim().length > 0 &&
-    houseNumber.trim().length > 0 &&
-    city.trim().length > 0 &&
-    phoneOne.trim().length > 0 &&
-    email.trim().length > 0 &&
-    insurance.trim().length > 0 &&
-    specialist.trim().length > 0;
+  // Validation: check which required fields are missing
+  const getMissingFields = (): string[] => {
+    const missing: string[] = [];
+
+    if (!practitionerId) {
+      missing.push(t('behandelaar'));
+    }
+    if (!date) {
+      missing.push(t('aanmeetdatum'));
+    }
+    if (!location) {
+      missing.push(t('locatie'));
+    }
+    if (!salutation) {
+      missing.push(t('aanhef'));
+    }
+    if (!initials.trim()) {
+      missing.push(t('voorletters'));
+    }
+    if (!clientName.trim()) {
+      missing.push(t('achternaam'));
+    }
+    if (!birthDate) {
+      missing.push(t('geboortedatum'));
+    }
+    if (!address.trim()) {
+      missing.push(t('straatnaam'));
+    }
+    if (!postalCode.trim()) {
+      missing.push(t('postcode'));
+    }
+    if (!houseNumber.trim()) {
+      missing.push(t('huisnummer'));
+    }
+    if (!city.trim()) {
+      missing.push(t('stad'));
+    }
+    if (!phoneOne.trim()) {
+      missing.push(t('telefoon1'));
+    }
+    if (!email.trim()) {
+      missing.push(t('emailadres'));
+    }
+    if (!insurance.trim()) {
+      missing.push(t('verzekeringsmaatschappij'));
+    }
+    if (!specialist.trim()) {
+      missing.push(t('specialistHuisarts'));
+    }
+
+    return missing;
+  };
+
+  const areAllFieldsValid = getMissingFields().length === 0;
 
   const handleSubmit = () => {
     if (!areAllFieldsValid) {
-      return;
+      return; // Validation alert will show the missing fields
     }
     // Dispatch client data naar Redux store
     dispatch(
@@ -472,13 +511,21 @@ export const FormNewClientPage = () => {
               </FormControl>
             </Flex>
           </Flex>
-          {!areAllFieldsValid && (
-            <Alert status="warning" mt={4}>
-              <AlertIcon />
-              Vul alle verplichte velden in om verder te gaan.
-            </Alert>
-          )}
         </Box>
+
+        {!areAllFieldsValid && (
+          <Alert status="warning" borderRadius="md">
+            <AlertIcon />
+            <Box>
+              <Text fontWeight="bold" mb={2}>{t('vulVerplichteVeldenIn')}</Text>
+              <UnorderedList>
+                {getMissingFields().map((field, index) => (
+                  <ListItem key={index}>{field}</ListItem>
+                ))}
+              </UnorderedList>
+            </Box>
+          </Alert>
+        )}
 
         {/* Submit button */}
         <Flex justifyContent={{ base: 'stretch', sm: 'flex-end' }} mt={4}>

@@ -111,6 +111,9 @@ export interface IntakeVLOSData {
   // Walking sole type
   loopzoolType?: string;
 
+  // Generated basis code (1-8)
+  generalBasiscode?: string;
+
   // Special notes
   bijzonderheden?: string;
 }
@@ -222,17 +225,20 @@ export interface IntakeOSBData {
   zoolverstijvingLinks?: boolean;
   zoolverstijvingRechts?: boolean;
 
-  // Insole component - gedeelde velden - now key-value pairs for Word document generation
-  steunzoolType?: Record<string, boolean>; // Keys like steunzoolTypeBerksteunzoolMet
-  steunzoolAnders?: boolean; // Anders checkbox
+  // Insole component - single select steunzooltype
+  steunzoolTypeGeneral?: string; // Single selected type
   steunzoolAndersText?: string; // Anders text input
   steunzoolCorrectieMiddenvoet?: string; // Midfoot correction
   steunzoolCorrectieVoorvoet?: string; // Forefoot correction
   steunzoolVvPellote?: string; // Forefoot pad
 
-  // Insole component - alleen hak verhoging is gesplitst
+  // Insole component - hak verhoging is gesplitst
   steunzoolHakVerhogingLinks?: string; // Heel raise in cm
   steunzoolHakVerhogingRechts?: string;
+
+  // Insole price
+  steunzoolPrijs?: number; // Price numeric value
+  steunzoolPrijsNaam?: string; // Price label name
 
   // Special notes
   bijzonderheden?: string;
@@ -271,6 +277,17 @@ export interface IntakeOVACData {
   voorvoetCm?: string;
   hielCm?: string;
 
+  // Steunzolen (optional)
+  steunzoolTypeGeneral?: string; // Single selected type
+  steunzoolAndersText?: string; // Anders text input
+  steunzoolCorrectieMiddenvoet?: string; // Midfoot correction
+  steunzoolCorrectieVoorvoet?: string; // Forefoot correction
+  steunzoolVvPellote?: string; // Forefoot pad
+  steunzoolHakVerhogingLinks?: string; // Heel raise in cm
+  steunzoolHakVerhogingRechts?: string;
+  steunzoolPrijs?: number; // Price numeric value
+  steunzoolPrijsNaam?: string; // Price label name
+
   // Special notes
   bijzonderheden?: string;
 }
@@ -285,11 +302,10 @@ export interface IntakeSteunzolenData {
   // Shoe size (required)
   schoenmaat?: string;
 
-  // Insole types - now key-value pairs for Word document generation
-  steunzoolType?: Record<string, boolean>; // Keys like steunzoolTypeBerksteunzoolMet
+  // Insole type - single select
+  steunzoolTypeGeneral?: string; // Single selected type
 
   // Anders option
-  steunzoolAnders?: boolean;
   steunzoolAndersText?: string;
 
   // Corrections
@@ -301,8 +317,9 @@ export interface IntakeSteunzolenData {
   steunzoolHakVerhogingLinks?: string; // Heel raise in cm
   steunzoolHakVerhogingRechts?: string;
 
-  // Price (required)
-  prijs?: string;
+  // Price (required) - numeric value and label
+  prijs?: number; // Price numeric value
+  prijsNaam?: string; // Price label name
 
   // Special notes
   bijzonderheden?: string;

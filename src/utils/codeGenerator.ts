@@ -54,6 +54,7 @@ export interface GeneratedCodes {
 export interface CodeGenerationResult {
     codes: GeneratedCodes;
     warnings: string[];
+    generalBasiscode: string | null;
 }
 
 interface IntakeFormData {
@@ -282,17 +283,18 @@ export function generateCodes(
 ): CodeGenerationResult {
     const codes = initializeCodes();
     const warnings: string[] = [];
+    let generalBasiscode: string | null = null;
 
     if (!clientData) {
         warnings.push('Geen client data gevonden');
-        return { codes, warnings };
+        return { codes, warnings, generalBasiscode };
     }
 
     const { intakeType } = clientData;
 
     if (!intakeType) {
         warnings.push('Intake type is niet geselecteerd');
-        return { codes, warnings };
+        return { codes, warnings, generalBasiscode };
     }
 
     // Generate codes based on intake type
@@ -328,5 +330,15 @@ export function generateCodes(
             warnings.push(`Onbekend intake type: ${intakeType}`);
     }
 
-    return { codes, warnings };
+    // Determine generalBasiscode (codes 1-8 for VLOS/OSA)
+    if (codes.code01) generalBasiscode = '1';
+    else if (codes.code02) generalBasiscode = '2';
+    else if (codes.code03) generalBasiscode = '3';
+    else if (codes.code04) generalBasiscode = '4';
+    else if (codes.code05) generalBasiscode = '5';
+    else if (codes.code06) generalBasiscode = '6';
+    else if (codes.code07) generalBasiscode = '7';
+    else if (codes.code08) generalBasiscode = '8';
+
+    return { codes, warnings, generalBasiscode };
 }
