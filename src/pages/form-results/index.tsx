@@ -1,21 +1,28 @@
 import React, {useState} from 'react';
 import {BaseLayout, FormSection, FormFooter} from '@/components/layout';
 import {Button} from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import {Separator} from '@/components/ui/separator';
 import {CheckCircle2, AlertTriangle, Copy, Check} from 'lucide-react';
 import useTranslation from 'next-translate/useTranslation';
 import {useRouter} from 'next/router';
 import {Routes} from '@/lib/routes';
 import {useAppSelector} from '@/domain/store/hooks';
-import {BEHANDELAARS} from '@/lib/constants/formConstants';
-import {generateCodes} from '@/utils/codeGenerator';
+import {PRACTITIONERS} from '@/domain/form/constants/formConstants';
+import {generateCodes} from '@/domain/form/generators/codeGenerator';
+import {clearAllFormStorage} from '@/utils/localStorageHelper';
+import {FormBlock, FormCard, FormItemWrapper} from '@/components/ui/form-block';
+import {
+  normalizeClientData,
+  normalizeIntakeVLOSData,
+  normalizeIntakeOSAData,
+  normalizeIntakePulmanData,
+  normalizeIntakeRebacareData,
+  normalizeIntakeOSBData,
+  normalizeIntakeOVACData,
+  normalizeIntakeSteunzolenData,
+  normalizeCheckFoliepasData,
+  normalizeValue,
+} from '@/domain/form/normalizers/formDataNormalizer';
 
 const FormResultsPage = () => {
   const router = useRouter();
@@ -26,7 +33,7 @@ const FormResultsPage = () => {
   // If no client data exists, redirect to new client page
   React.useEffect(() => {
     if (!formData.client) {
-      router.push(Routes.form_new_client);
+      void router.push(Routes.form_new_client);
     }
   }, [formData.client, router]);
 
@@ -34,79 +41,138 @@ const FormResultsPage = () => {
     return null;
   }
 
-  // Normalize values: false/"nee" -> "", true/"ja" -> "Ja"
-  // Keep all keys for Word document generation (no exclusion)
-  const normalizeValue = (value: any): any => {
-    if (value === null || value === undefined) {
-      return '';
-    }
-    if (typeof value === 'boolean') {
-      return value ? 'Ja' : ''; // false becomes empty string, not excluded
-    }
-    if (typeof value === 'string') {
-      if (value.toLowerCase() === 'yes') {
-        return 'Ja';
-      }
-      if (value.toLowerCase() === 'no') {
-        return '';
-      }
-      return value;
-    }
-    if (Array.isArray(value)) {
-      return value.map(normalizeValue);
-    }
-    if (typeof value === 'object') {
-      return normalizeObject(value);
-    }
-    return value;
-  };
+  // Type for the complete JSON result
+  interface FormResultJSON {
+    clientData: Record<string, string>;
+    intakeVLOS?: Record<string, string>;
+    intakeOSA?: Record<string, string>;
+    intakePulman?: Record<string, string>;
+    intakeRebacare?: Record<string, string>;
+    intakeOSB?: Record<string, string>;
+    intakeOVAC?: Record<string, string>;
+    intakeInsoles?: Record<string, string>;
+    checkFoliepas?: Record<string, string>;
+    medicalCodes?: Record<string, string>;
+    codeWarnings?: string[];
+    generatedAt: string;
+  }
 
-  const normalizeObject = (obj: any): any => {
-    const normalized: any = {};
-    for (const [key, value] of Object.entries(obj)) {
-      normalized[key] = normalizeValue(value);
+  // Helper function to apply translations to normalized data
+  const applyTranslations = (
+    data: Record<string, string>,
+  ): Record<string, string> => {
+    const translated: Record<string, string> = {};
+
+    const translateIfAvailable = (val: string): string => {
+      const maybe = t(val);
+      return maybe === val ? val : maybe;
+    };
+
+    for (const [key, value] of Object.entries(data)) {
+      // Handle aggregated values (e.g., "hmsn + degeneratie")
+      // These contain field labels separated by " + " that need translation
+      if (key.startsWith('all') && value.includes(' + ')) {
+        const translatedLabels = value
+          .split(' + ')
+          .map(label => translateIfAvailable(label.trim()))
+          .join(' + ');
+        translated[key] = translatedLabels;
+      }
+      // Translate value if a translation exists; otherwise keep as-is
+      else {
+        translated[key] = translateIfAvailable(value);
+      }
     }
-    return normalized;
+    return translated;
   };
 
   // Generate complete JSON with all data and constants
-  const generateCompleteJSON = () => {
-    // Resolve practitioner ID to name
-    const resolvedClientData = formData.client
-      ? normalizeObject({
-          ...formData.client,
-          practitionerName:
-            BEHANDELAARS.find(p => p.value === formData.client?.practitionerId)
-              ?.label || formData.client?.practitionerId,
-        })
-      : null;
+  const generateCompleteJSON = (): FormResultJSON => {
+    // Normalize and resolve client data
+    const normalizedClientData = normalizeClientData(formData.client);
 
-    // Build result object with only non-null intake forms
-    const result: any = {
-      clientData: resolvedClientData,
+    // Resolve practitioner name from ID
+    const practitionerName =
+      PRACTITIONERS.find(p => p.value === formData.client?.practitionerId)
+        ?.label ||
+      formData.client?.practitionerId ||
+      '';
+
+    // Build result object with normalized data
+    const result: FormResultJSON = {
+      clientData: {
+        ...normalizedClientData,
+        practitionerName,
+      },
+      generatedAt: new Date().toISOString(),
     };
 
-    // Only include intake forms that have data (normalized)
-    if (formData.intakeVLOS) {
-      result.intakeVLOS = normalizeObject(formData.intakeVLOS);
-    }
-    if (formData.intakeOSA) {
-      result.intakeOSA = normalizeObject(formData.intakeOSA);
-    }
-    if (formData.intakePulman) {
-      result.intakePulman = normalizeObject(formData.intakePulman);
-    }
-    if (formData.intakeRebacare) {
-      result.intakeRebacare = normalizeObject(formData.intakeRebacare);
-    }
-    if (formData.intakeOSB) {
-      result.intakeOSB = normalizeObject(formData.intakeOSB);
-    }
-    if (formData.intakeOVAC) {
-      result.intakeOVAC = normalizeObject(formData.intakeOVAC);
-    }
-    if (formData.intakeSteunzolen) {
-      result.intakeSteunzolen = normalizeObject(formData.intakeSteunzolen);
+    // Map of form types to their normalizer functions and normalized data
+    const formNormalizers: Array<{
+      key: keyof Omit<
+        FormResultJSON,
+        'clientData' | 'medicalCodes' | 'codeWarnings' | 'generatedAt'
+      >;
+      intakeType: string;
+      data: any;
+      normalizer: (data: any) => Record<string, string>;
+    }> = [
+      {
+        key: 'intakeVLOS',
+        intakeType: 'VLOS',
+        data: formData.intakeVLOS,
+        normalizer: normalizeIntakeVLOSData,
+      },
+      {
+        key: 'intakeOSA',
+        intakeType: 'OSA',
+        data: formData.intakeOSA,
+        normalizer: normalizeIntakeOSAData,
+      },
+      {
+        key: 'intakePulman',
+        intakeType: 'Pulman',
+        data: formData.intakePulman,
+        normalizer: normalizeIntakePulmanData,
+      },
+      {
+        key: 'intakeRebacare',
+        intakeType: 'Rebacare',
+        data: formData.intakeRebacare,
+        normalizer: normalizeIntakeRebacareData,
+      },
+      {
+        key: 'intakeOSB',
+        intakeType: 'OSB',
+        data: formData.intakeOSB,
+        normalizer: normalizeIntakeOSBData,
+      },
+      {
+        key: 'intakeOVAC',
+        intakeType: 'OVAC',
+        data: formData.intakeOVAC,
+        normalizer: normalizeIntakeOVACData,
+      },
+      {
+        key: 'intakeInsoles',
+        intakeType: 'Steunzolen',
+        data: formData.intakeInsoles,
+        normalizer: normalizeIntakeSteunzolenData,
+      },
+      {
+        key: 'checkFoliepas',
+        intakeType: 'CheckFoliepas',
+        data: formData.checkFoliepas,
+        normalizer: normalizeCheckFoliepasData,
+      },
+    ];
+
+    // Normalize and include only the selected intake form (based on client intakeType)
+    for (const {key, intakeType, data, normalizer} of formNormalizers) {
+      // Only include the form that matches the client's selected intake type
+      if (data && formData.client.intakeType === intakeType) {
+        (result as any)[key] = applyTranslations(normalizer(data));
+      }
     }
 
     // Generate medical codes if applicable
@@ -114,7 +180,7 @@ const FormResultsPage = () => {
       formData.client &&
       (formData.intakeVLOS || formData.intakeOSA || formData.intakeOSB)
     ) {
-      const {codes, warnings, generalBasiscode} = generateCodes(
+      const {codes, warnings, generalBaseCode} = generateCodes(
         formData.client,
         {
           intakeVLOS: formData.intakeVLOS,
@@ -123,23 +189,36 @@ const FormResultsPage = () => {
           intakeRebacare: formData.intakeRebacare,
           intakeOSB: formData.intakeOSB,
           intakeOVAC: formData.intakeOVAC,
-          intakeSteunzolen: formData.intakeSteunzolen,
+          intakeInsoles: formData.intakeInsoles,
         },
       );
 
-      // Group normalized codes under medicalCodes object
-      result.medicalCodes = normalizeObject(codes);
+      // Flatten medical codes to simple key-value pairs
+      // Note: Using underscore as separator (e.g., "vlos_code" from nested {vlos: {code: "1"}})
+      // This is safe as code keys don't contain underscores in the current implementation
+      const flattenedCodes: Record<string, string> = {};
+      for (const [key, value] of Object.entries(codes)) {
+        if (typeof value === 'object' && value !== null) {
+          // Flatten nested code objects
+          for (const [nestedKey, nestedValue] of Object.entries(value)) {
+            flattenedCodes[`${key}_${nestedKey}`] = normalizeValue(nestedValue);
+          }
+        } else {
+          flattenedCodes[key] = normalizeValue(value);
+        }
+      }
+      result.medicalCodes = flattenedCodes;
 
-      // Add generalBasiscode to the appropriate intake data
-      if (generalBasiscode) {
+      // Add generalBaseCode to the appropriate intake data
+      if (generalBaseCode) {
         if (formData.intakeVLOS && result.intakeVLOS) {
-          result.intakeVLOS.generalBasiscode = generalBasiscode;
+          result.intakeVLOS.generalBaseCode = generalBaseCode;
         }
         if (formData.intakeOSA && result.intakeOSA) {
-          result.intakeOSA.generalBasiscode = generalBasiscode;
+          result.intakeOSA.generalBaseCode = generalBaseCode;
         }
         if (formData.intakeOSB && result.intakeOSB) {
-          result.intakeOSB.generalBasiscode = generalBasiscode;
+          result.intakeOSB.generalBaseCode = generalBaseCode;
         }
       }
 
@@ -149,8 +228,6 @@ const FormResultsPage = () => {
       }
     }
 
-    result.generatedAt = new Date().toISOString();
-
     return result;
   };
 
@@ -159,10 +236,15 @@ const FormResultsPage = () => {
   const codeWarnings = jsonData.codeWarnings as string[] | undefined;
 
   const handleCopyJSON = () => {
-    navigator.clipboard.writeText(jsonString).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+    navigator.clipboard
+      .writeText(jsonString)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {
+        // Handle clipboard error silently
+      });
   };
 
   const renderFieldValue = (label: string, value: any) => {
@@ -178,10 +260,16 @@ const FormResultsPage = () => {
     }
 
     return (
-      <div key={label} className="mb-2">
-        <p className="text-sm font-semibold text-muted-foreground">{label}:</p>
-        <p className="text-md">{displayValue}</p>
-      </div>
+      <FormItemWrapper
+        key={label}
+        centerItems={false}
+        centerTitle={false}
+        label={label}
+      >
+        <p className="text-md text-foreground wrap-break-word">
+          {displayValue}
+        </p>
+      </FormItemWrapper>
     );
   };
 
@@ -191,9 +279,9 @@ const FormResultsPage = () => {
     }
 
     return (
-      <div>
-        <h3 className="text-lg font-bold mb-3">{title}</h3>
-        <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-4">
+        <h3 className="text-lg font-bold">{title}</h3>
+        <div className="grid gap-3 md:grid-cols-2">
           {Object.entries(data).map(([key, value]) =>
             renderFieldValue(key, value),
           )}
@@ -216,95 +304,33 @@ const FormResultsPage = () => {
         </div>
 
         <FormSection>
-          <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-md">
-            <CheckCircle2 className="w-5 h-5 text-green-600" />
-            <p className="text-sm">{t('formDataComplete')}</p>
-          </div>
-
-          {/* Display code generation warnings if any */}
-          {codeWarnings && codeWarnings.length > 0 && (
-            <div className="flex flex-col gap-3 p-4 bg-orange-50 border border-orange-200 rounded-md">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-orange-600" />
-                <p className="font-bold">{t('codeWarnings')}:</p>
-              </div>
-              <div className="flex flex-col gap-2 ml-6">
-                {codeWarnings.map((warning, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-center gap-2"
-                  >
-                    <p className="text-sm">{warning}</p>
-                  </div>
-                ))}
-              </div>
+          <div className="flex flex-col gap-6">
+            {/* Alle formuliergegevens zijn succesvol opgeslagen. */}
+            <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-md">
+              <CheckCircle2 className="w-5 h-5 text-green-600" />
+              <p className="text-sm">{t('formDataComplete')}</p>
             </div>
-          )}
 
-          <Separator />
-
-          {/* Display all form data */}
-          <div>
-            <h2 className="text-xl font-bold mb-4">{t('submittedData')}</h2>
-
-            {renderSection(t('clientData'), formData.client)}
-
-            {formData.intakeVLOS && (
-              <>
-                <Separator className="my-4" />
-                {renderSection(t('intakeVlos'), formData.intakeVLOS)}
-              </>
+            {codeWarnings && codeWarnings.length > 0 && (
+              <div className="flex flex-col gap-3 p-4 bg-orange-50 border border-orange-200 rounded-md">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-orange-600" />
+                  <p className="font-bold">{t('codeWarnings')}:</p>
+                </div>
+                <div className="flex flex-col gap-2 ml-6">
+                  {codeWarnings.map((warning, idx) => (
+                    <div
+                      key={idx}
+                      className="flex justify-between items-center gap-2"
+                    >
+                      <p className="text-sm">{warning}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
 
-            {formData.intakeOSA && (
-              <>
-                <Separator className="my-4" />
-                {renderSection(t('intakeOsa'), formData.intakeOSA)}
-              </>
-            )}
-
-            {formData.intakePulman && (
-              <>
-                <Separator className="my-4" />
-                {renderSection(t('intakePulman'), formData.intakePulman)}
-              </>
-            )}
-
-            {formData.intakeRebacare && (
-              <>
-                <Separator className="my-4" />
-                {renderSection(t('intakeRebacare'), formData.intakeRebacare)}
-              </>
-            )}
-
-            {formData.intakeOSB && (
-              <>
-                <Separator className="my-4" />
-                {renderSection(t('intakeOsb'), formData.intakeOSB)}
-              </>
-            )}
-
-            {formData.intakeOVAC && (
-              <>
-                <Separator className="my-4" />
-                {renderSection(t('intakeOvac'), formData.intakeOVAC)}
-              </>
-            )}
-
-            {formData.intakeSteunzolen && (
-              <>
-                <Separator className="my-4" />
-                {renderSection(t('intakeInsoles'), formData.intakeSteunzolen)}
-              </>
-            )}
-          </div>
-
-          <Separator />
-
-          {/* JSON Output Section */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">{t('jsonOutput')}</h2>
+            <div className="flex justify-center">
               <Button
                 onClick={handleCopyJSON}
                 className="flex items-center gap-2"
@@ -312,7 +338,7 @@ const FormResultsPage = () => {
                 {copied ? (
                   <>
                     <Check className="w-4 h-4" />
-                    Copied!
+                    {t('copied') ?? 'Copied!'}
                   </>
                 ) : (
                   <>
@@ -323,26 +349,79 @@ const FormResultsPage = () => {
               </Button>
             </div>
 
-            <p className="text-sm text-muted-foreground mb-3">
-              {t('jsonOutputDescription')}
-            </p>
+            {/* Alle gegevens van het formulier */}
+            <FormBlock
+              columns={1}
+              responsive
+              alignItems="stretch"
+              centerTitle={false}
+            >
+              {/* De ingediende gegevens */}
+              <FormCard
+                title={t('submittedData')}
+                description={t('formResultsDescription')}
+                toggleAble
+                toggleLabel="Open/Sluit"
+                defaultOpen={false}
+                contentClassName="space-y-6"
+              >
+                {renderSection(t('clientData'), formData.client)}
 
-            <div className="bg-gray-50 p-4 rounded-md border border-gray-200 max-h-[500px] overflow-y-auto">
-              <pre className="text-sm whitespace-pre font-mono">
-                {jsonString}
-              </pre>
-            </div>
+                {formData.intakeVLOS &&
+                  renderSection(t('intakeVlos'), formData.intakeVLOS)}
+                {formData.intakeOSA &&
+                  renderSection(t('intakeOsa'), formData.intakeOSA)}
+                {formData.intakePulman &&
+                  renderSection(t('intakePulman'), formData.intakePulman)}
+                {formData.intakeRebacare &&
+                  renderSection(t('intakeRebacare'), formData.intakeRebacare)}
+                {formData.intakeOSB &&
+                  renderSection(t('intakeOsb'), formData.intakeOSB)}
+                {formData.intakeOVAC &&
+                  renderSection(t('intakeOvac'), formData.intakeOVAC)}
+                {formData.intakeInsoles &&
+                  renderSection(t('intakeInsoles'), formData.intakeInsoles)}
+              </FormCard>
+
+              {/* De volledige JSON output */}
+              <FormCard
+                title={t('jsonOutput')}
+                description={t('jsonOutputDescription')}
+                toggleAble
+                toggleLabel="Open/Sluit"
+                defaultOpen
+              >
+                <FormItemWrapper
+                  // centerItems={false}
+                  // centerTitle={false}
+                  label={t('jsonOutput')}
+                >
+                  <pre className="p-4 bg-gray-50 rounded-md border border-gray-200 max-h-125 overflow-y-auto text-sm whitespace-pre-wrap wrap-break-word font-mono">
+                    {jsonString}
+                  </pre>
+                </FormItemWrapper>
+              </FormCard>
+            </FormBlock>
           </div>
 
-          {/* Action Buttons */}
+          <Separator />
+
           <FormFooter>
             <Button
               variant="outline"
-              onClick={() => router.push(Routes.form_selection)}
+              onClick={() => {
+                clearAllFormStorage();
+                void router.push(Routes.form_selection);
+              }}
             >
               {t('fillAnotherForm')}
             </Button>
-            <Button onClick={() => router.push(Routes.overview)}>
+            <Button
+              onClick={() => {
+                clearAllFormStorage();
+                void router.push(Routes.overview);
+              }}
+            >
               {t('backToOverview')}
             </Button>
           </FormFooter>

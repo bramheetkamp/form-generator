@@ -5,7 +5,6 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Textarea} from '@/components/ui/textarea';
 import {Checkbox} from '@/components/ui/checkbox';
-import {Switch} from '@/components/ui/switch';
 import {
   Card,
   CardContent,
@@ -21,56 +20,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {Separator} from '@/components/ui/separator';
+import {FormCard, FormBlock, FormItemWrapper} from '@/components/ui/form-block'; // IMPORT DE NIEUWE COMPONENTS
 import useTranslation from 'next-translate/useTranslation';
 import {useRouter} from 'next/router';
 import {Routes} from '@/lib/routes';
 import {
-  ENCLOSURE_OPTIONS,
-  OmsluitingKey,
-  EnclosureOption,
-  SHAFT_OPENING_OPTIONS,
-  SUPPLEMENT_TYPE_OPTIONS,
-  HEEL_TYPE_OPTIONS,
-  WALKING_SOLE_OPTIONS,
-  CLOSURE_OPTIONS,
-  HEEL_WEDGE_TYPE_OPTIONS,
-  DONKEY_EAR_TYPE_OPTIONS,
-  YES_NO_OPTIONS,
   PAIR_TYPE_OPTIONS,
   PATHOLOGIES_OPTIONS,
   WALKING_DISTANCE_AIDS_OPTIONS,
   FOOT_INSPECTION_OPTIONS,
   LAST_HEIGHT_OPTIONS,
   MTP1_DEEP_OPTIONS,
+  YES_NO_OPTIONS,
   Side,
 } from '@/domain/form/constants/formConstants';
 import {useAppDispatch, useAppSelector} from '@/domain/store/hooks';
 import {setIntakeOSAData, setClientData} from '@/domain/store/slices/formData';
 
 import {ChevronRight} from 'lucide-react';
-import {useForm, Controller} from 'react-hook-form';
+import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import {Form} from '@/components/ui/form';
 import {scrollToFirstError} from '@/utils/formHelpers';
 import {useFormPersistence} from '@/hooks/useFormPersistence';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import {FormCard, FormBlock, FormItemWrapper} from '@/components/ui/form-block';
 
-const FormIntakeOSAPage = () => {
+const FormIntakeTestPage = () => {
   const router = useRouter();
   const {t} = useTranslation('form');
   const dispatch = useAppDispatch();
@@ -78,22 +53,16 @@ const FormIntakeOSAPage = () => {
 
   const formSchema = z.object({
     whichPair: z.string(),
-    medicalIndication: z.string().optional(),
-
     side: z.enum(['left', 'right', 'both'] as const),
     shaftHeightLeft: z.string().optional(),
     shaftHeightRight: z.string().optional(),
     amputationLeftEnabled: z.boolean(),
     amputationRightEnabled: z.boolean(),
     specialNotes: z.string().optional(),
-
-    // Functieonderzoek fields
     pathologies: z.record(z.string(), z.boolean()),
     walkingDistanceAids: z.record(z.string(), z.boolean()),
     painPerception: z.string().optional(),
     footInspection: z.record(z.string(), z.boolean()),
-
-    // Digitaal fields
     digitalEnabled: z.boolean(),
     heelLiftLeft: z.string().optional(),
     heelLiftRight: z.string().optional(),
@@ -111,26 +80,23 @@ const FormIntakeOSAPage = () => {
     resolver: zodResolver(formSchema),
     shouldFocusError: true,
     defaultValues: {
-      whichPair: PAIR_TYPE_OPTIONS[0]?.value || '',
+      whichPair: 'Eerste paar',
       side: 'both',
-      medicalIndication: '',
-      shaftHeightLeft: '12.5',
-      shaftHeightRight: '12.5',
+      shaftHeightLeft: '14',
+      shaftHeightRight: '14',
       amputationLeftEnabled: false,
       amputationRightEnabled: false,
       specialNotes: '',
-      // Functieonderzoek defaults
       pathologies: {},
       walkingDistanceAids: {},
       painPerception: '0',
       footInspection: {},
-      // Digitaal defaults
       digitalEnabled: false,
       heelLiftLeft: '',
       heelLiftRight: '',
       lastHeight: LAST_HEIGHT_OPTIONS[0]?.value || '',
-      mtp1DeepLeft: MTP1_DEEP_OPTIONS[0]?.value || '',
-      mtp1DeepRight: MTP1_DEEP_OPTIONS[0]?.value || '',
+      mtp1DeepLeft: 'No',
+      mtp1DeepRight: 'No',
       clawToesEnabled: false,
       scannedWithFoil: false,
       digitalInstructions: '',
@@ -149,13 +115,11 @@ const FormIntakeOSAPage = () => {
   };
 
   const side = form.watch('side');
-  // Removed watchers for moved sections
   const digitalEnabled = form.watch('digitalEnabled');
 
   const showLinks = side === 'left' || side === 'both';
   const showRechts = side === 'right' || side === 'both';
 
-  // Helper functions
   const boolToString = (value: boolean): string => (value ? 'ja' : 'nee');
   const stringToBool = (value: string): boolean => value === 'ja';
 
@@ -167,11 +131,9 @@ const FormIntakeOSAPage = () => {
     dispatch(
       setIntakeOSAData({
         whichPair: data.whichPair,
-        medicalIndication: data.medicalIndication || '',
         side: data.side,
         shaftHeightLeft: data.shaftHeightLeft || '',
         shaftHeightRight: data.shaftHeightRight || '',
-        // Neutral defaults for fields moved to Foliepas to satisfy typing
         enclosureLeft: {},
         enclosureRight: {},
         enclosureLeftMm: {},
@@ -210,7 +172,6 @@ const FormIntakeOSAPage = () => {
         heelRoundingRightLength: '',
         rockerSoleType: '',
         specialNotes: data.specialNotes || '',
-        // Functieonderzoek fields
         pathologies: data.pathologies as Record<string, boolean>,
         walkingDistanceAids: data.walkingDistanceAids as Record<
           string,
@@ -218,8 +179,6 @@ const FormIntakeOSAPage = () => {
         >,
         painPerception: data.painPerception || '',
         footInspection: data.footInspection as Record<string, boolean>,
-        // Leg length moved to Foliepas
-        // Digitaal fields
         digitalEnabled: data.digitalEnabled,
         heelLiftLeft: data.heelLiftLeft || '',
         heelLiftRight: data.heelLiftRight || '',
@@ -231,9 +190,7 @@ const FormIntakeOSAPage = () => {
         digitalInstructions: data.digitalInstructions || '',
       }),
     );
-
-    clearStorage();
-
+    handleResetDraft();
     void router.push(Routes.form_results);
   };
 
@@ -256,99 +213,84 @@ const FormIntakeOSAPage = () => {
               onSubmit={form.handleSubmit(onSubmit, scrollToFirstError)}
               className="space-y-4"
             >
-              {/* Paartype & indicatie */}
-              <FormCard title={t('description')} description={t('whichPair')}>
-                <FormBlock columns={2} dividers={true} alignItems="start">
-                  {/* Which Pair (Radio Group) */}
-                  <FormItemWrapper label={t('whichPair')}>
-                    <RadioGroup
-                      value={form.watch('whichPair')}
-                      onValueChange={val => form.setValue('whichPair', val)}
-                      className="w-2/3"
-                    >
-                      <div className="flex flex-col gap-3">
-                        {PAIR_TYPE_OPTIONS.map(option => (
+              {/* Which Pair */}
+              <FormCard
+                title={t('whichPair')}
+                // description='Hallo'
+              >
+                <FormBlock columns={1} dividers={false} hoverEffect={false}>
+                  <RadioGroup
+                    value={form.watch('whichPair')}
+                    onValueChange={v => form.setValue('whichPair', v)}
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {PAIR_TYPE_OPTIONS.map(option => (
+                        <div
+                          key={option.value}
+                          className="flex items-center space-x-2"
+                        >
+                          <RadioGroupItem
+                            value={option.value}
+                            id={`paar-${option.value}`}
+                          />
                           <Label
-                            key={option.value}
-                            className="flex items-center gap-3 rounded-md border bg-foreground/5 px-3 py-2 cursor-pointer hover:bg-accent/30 transition-colors"
-                            htmlFor={`ov-${option.value}`}
+                            htmlFor={`paar-${option.value}`}
+                            className="font-normal cursor-pointer"
                           >
-                            <RadioGroupItem
-                              id={`ov-${option.value}`}
-                              value={option.value}
-                            />
-                            <span className="text-sm text-foreground">
-                              {t(option.label)}
-                            </span>
+                            {t(option.label)}
                           </Label>
-                        ))}
-                      </div>
-                    </RadioGroup>
-                  </FormItemWrapper>
-
-                  {/* Medical Indication (Textarea) */}
-                  <FormItemWrapper label={t('medicalIndication')}>
-                    <Textarea
-                      id="medische-indicatie"
-                      placeholder={t('medicalIndicationPlaceholder')}
-                      value={form.watch('medicalIndication')}
-                      onChange={e =>
-                        form.setValue('medicalIndication', e.target.value)
-                      }
-                      rows={4}
-                      className="w-2/3"
-                    />
-                  </FormItemWrapper>
+                        </div>
+                      ))}
+                    </div>
+                  </RadioGroup>
                 </FormBlock>
               </FormCard>
 
-              {/* Side & Amputation */}
-              <FormCard
-                title={t('side') + ' & ' + t('amputation')}
-                description={t('sideAmputationDescription')}
-              >
-                <FormBlock columns={2} dividers={true} hoverEffect={false}>
-                  {/* Side Selection */}
-                  <FormItemWrapper label={t('side')}>
-                    <FormField
-                      control={form.control}
-                      name="side"
-                      render={({field}) => (
-                        <FormItem>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <div className="flex flex-wrap gap-6">
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="both" id="side-both" />
-                                  <Label htmlFor="side-both">{t('both')}</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="left" id="side-left" />
-                                  <Label htmlFor="side-left">{t('left')}</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem
-                                    value="right"
-                                    id="side-right"
-                                  />
-                                  <Label htmlFor="side-right">
-                                    {t('right')}
-                                  </Label>
-                                </div>
-                              </div>
-                            </RadioGroup>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </FormItemWrapper>
+              {/* Side Selection */}
+              <FormCard title={t('side')}>
+                <FormBlock columns={1} dividers={false} hoverEffect={false}>
+                  <RadioGroup
+                    value={side}
+                    onValueChange={v => form.setValue('side', v as Side)}
+                  >
+                    <div className="flex flex-wrap gap-6">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="both" id="side-both" />
+                        <Label
+                          htmlFor="side-both"
+                          className="font-normal cursor-pointer"
+                        >
+                          {t('both')}
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="left" id="side-left" />
+                        <Label
+                          htmlFor="side-left"
+                          className="font-normal cursor-pointer"
+                        >
+                          {t('left')}
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="right" id="side-right" />
+                        <Label
+                          htmlFor="side-right"
+                          className="font-normal cursor-pointer"
+                        >
+                          {t('right')}
+                        </Label>
+                      </div>
+                    </div>
+                  </RadioGroup>
+                </FormBlock>
+              </FormCard>
 
-                  {/* Amputation */}
-                  <FormItemWrapper label={t('amputation')}>
-                    <div className="flex gap-6">
+              {/* Amputation */}
+              <FormCard title={t('amputation')}>
+                <FormBlock columns={1} dividers={false} hoverEffect={false}>
+                  <div className="flex flex-wrap gap-6">
+                    {showLinks && (
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="amp-left"
@@ -364,6 +306,8 @@ const FormIntakeOSAPage = () => {
                           {t('left')}
                         </Label>
                       </div>
+                    )}
+                    {showRechts && (
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="amp-right"
@@ -379,8 +323,8 @@ const FormIntakeOSAPage = () => {
                           {t('right')}
                         </Label>
                       </div>
-                    </div>
-                  </FormItemWrapper>
+                    )}
+                  </div>
                 </FormBlock>
               </FormCard>
 
@@ -397,9 +341,9 @@ const FormIntakeOSAPage = () => {
                   centerTitle={true}
                 >
                   {PATHOLOGIES_OPTIONS.map(optie => (
-                    <Label
+                    <div
                       key={optie.key}
-                      className="flex items-center space-x-2 rounded-md border bg-foreground/5 px-3 py-2 cursor-pointer hover:bg-accent/30 transition-colors has-aria-checked:bg-accent/30"
+                      className="flex items-center space-x-2 rounded-md border bg-muted/50 px-3 py-2"
                     >
                       <Checkbox
                         id={`ziektebeeld-${optie.key}`}
@@ -413,14 +357,14 @@ const FormIntakeOSAPage = () => {
                             [optie.key]: !!checked,
                           })
                         }
-                        className=""
                       />
-                      <div className="grid gap-1.5 font-normal">
-                        <p className="text-sm leading-none font-medium">
-                          {t(optie.translationKey)}
-                        </p>
-                      </div>
-                    </Label>
+                      <Label
+                        htmlFor={`ziektebeeld-${optie.key}`}
+                        className="font-normal cursor-pointer"
+                      >
+                        {t(optie.translationKey)}
+                      </Label>
+                    </div>
                   ))}
                 </FormBlock>
 
@@ -432,9 +376,9 @@ const FormIntakeOSAPage = () => {
                   centerTitle={true}
                 >
                   {WALKING_DISTANCE_AIDS_OPTIONS.map(optie => (
-                    <Label
+                    <div
                       key={optie.key}
-                      className="flex items-center space-x-2 rounded-md border bg-foreground/5 px-3 py-2 cursor-pointer hover:bg-accent/30 transition-colors has-aria-checked:bg-accent/30"
+                      className="flex items-center space-x-2 rounded-md border bg-muted/50 px-3 py-2"
                     >
                       <Checkbox
                         id={`loopafstand-${optie.key}`}
@@ -449,14 +393,14 @@ const FormIntakeOSAPage = () => {
                             [optie.key]: !!checked,
                           })
                         }
-                        className=""
                       />
-                      <div className="grid gap-1.5 font-normal">
-                        <p className="text-sm leading-none font-medium">
-                          {t(optie.translationKey)}
-                        </p>
-                      </div>
-                    </Label>
+                      <Label
+                        htmlFor={`loopafstand-${optie.key}`}
+                        className="font-normal cursor-pointer"
+                      >
+                        {t(optie.translationKey)}
+                      </Label>
+                    </div>
                   ))}
                 </FormBlock>
 
@@ -464,7 +408,7 @@ const FormIntakeOSAPage = () => {
                 <FormBlock title={t('painPerception')} centerTitle={true}>
                   <div className="space-y-2 pt-2">
                     <div className="grid grid-cols-6 gap-4 items-center">
-                      <div className="text-sm leading-none font-medium text-center">
+                      <div className="text-sm text-muted-foreground text-center">
                         {t('noPain')} (0)
                       </div>
                       <Input
@@ -477,9 +421,9 @@ const FormIntakeOSAPage = () => {
                         onChange={e =>
                           form.setValue('painPerception', e.target.value)
                         }
-                        className="col-span-4 accent-primary"
+                        className="col-span-4"
                       />
-                      <div className="text-sm leading-none font-medium text-center">
+                      <div className="text-sm text-muted-foreground text-center">
                         {t('maximumPain')} (10)
                       </div>
                     </div>
@@ -497,7 +441,10 @@ const FormIntakeOSAPage = () => {
                   dividers={false}
                 >
                   {FOOT_INSPECTION_OPTIONS.map(optie => (
-                    <Label className="flex items-center space-x-2 rounded-md border bg-foreground/5 px-3 py-2 cursor-pointer hover:bg-accent/30 transition-colors has-aria-checked:bg-accent/30">
+                    <div
+                      key={optie.key}
+                      className="flex items-center space-x-2 rounded-md border bg-muted/50 px-3 py-2"
+                    >
                       <Checkbox
                         id={`foot-inspection-${optie.key}`}
                         checked={
@@ -511,14 +458,14 @@ const FormIntakeOSAPage = () => {
                             [optie.key]: !!checked,
                           })
                         }
-                        className=""
                       />
-                      <div className="grid gap-1.5 font-normal">
-                        <p className="text-sm leading-none font-medium">
-                          {t(optie.translationKey)}
-                        </p>
-                      </div>
-                    </Label>
+                      <Label
+                        htmlFor={`foot-inspection-${optie.key}`}
+                        className="font-normal cursor-pointer"
+                      >
+                        {t(optie.translationKey)}
+                      </Label>
+                    </div>
                   ))}
                 </FormBlock>
               </FormCard>
@@ -559,7 +506,9 @@ const FormIntakeOSAPage = () => {
                 </FormBlock>
               </FormCard>
 
-              {/* DIGITAAL SECTION */}
+              {/*
+                 DIGITAAL SECTION
+              */}
               <FormCard
                 title={t('digital')}
                 description={t('digitalDescription')}
@@ -609,12 +558,8 @@ const FormIntakeOSAPage = () => {
                 </FormBlock>
 
                 {/* 3-koloms Radio Groups */}
-                <FormBlock
-                  columns={3}
-                  dividers={true}
-                  className="justify-center"
-                >
-                  <FormItemWrapper className="flex flex-col items-center">
+                <FormBlock columns={3} dividers={true}>
+                  <FormItemWrapper>
                     <Label className="text-base font-semibold">
                       {t('lastHeight')}
                     </Label>
@@ -622,7 +567,7 @@ const FormIntakeOSAPage = () => {
                       value={form.watch('lastHeight')}
                       onValueChange={v => form.setValue('lastHeight', v)}
                     >
-                      <div className="flex flex-wrap gap-3 pt-2 justify-center">
+                      <div className="flex flex-wrap gap-3 pt-2">
                         {LAST_HEIGHT_OPTIONS.map(opt => (
                           <div
                             key={opt.value}
@@ -644,7 +589,7 @@ const FormIntakeOSAPage = () => {
                     </RadioGroup>
                   </FormItemWrapper>
 
-                  <FormItemWrapper className="flex flex-col items-center">
+                  <FormItemWrapper>
                     <Label className="text-base font-semibold">
                       {t('clawToes')}
                     </Label>
@@ -654,7 +599,7 @@ const FormIntakeOSAPage = () => {
                         form.setValue('clawToesEnabled', stringToBool(v))
                       }
                     >
-                      <div className="flex flex-wrap gap-3 pt-2 justify-center">
+                      <div className="flex flex-wrap gap-3 pt-2">
                         {YES_NO_OPTIONS.map(opt => (
                           <div
                             key={opt.value}
@@ -676,7 +621,7 @@ const FormIntakeOSAPage = () => {
                     </RadioGroup>
                   </FormItemWrapper>
 
-                  <FormItemWrapper className="flex flex-col items-center">
+                  <FormItemWrapper>
                     <Label className="text-base font-semibold">
                       {t('scannedWithFoil')}
                     </Label>
@@ -686,7 +631,7 @@ const FormIntakeOSAPage = () => {
                         form.setValue('scannedWithFoil', stringToBool(v))
                       }
                     >
-                      <div className="flex flex-wrap gap-3 pt-2 justify-center">
+                      <div className="flex flex-wrap gap-3 pt-2">
                         {YES_NO_OPTIONS.map(opt => (
                           <div
                             key={opt.value}
@@ -737,7 +682,7 @@ const FormIntakeOSAPage = () => {
                     </FormItemWrapper>
                   )}
                   {showRechts && (
-                    <FormItemWrapper className="flex flex-col items-center">
+                    <FormItemWrapper className="items-center">
                       <Label htmlFor="mtp1-right">{t('rightCm')}</Label>
                       <Select
                         value={form.watch('mtp1DeepRight')}
@@ -825,4 +770,4 @@ const FormIntakeOSAPage = () => {
   );
 };
 
-export default FormIntakeOSAPage;
+export default FormIntakeTestPage;

@@ -19,8 +19,8 @@ import {
   setIntakeRebacareData,
   setClientData,
 } from '@/domain/store/slices/formData';
-import {Zijde, PAARTYPE_OPTIES} from '@/lib/constants/formConstants';
-import {ChevronRight} from 'lucide-react';
+import {Side, PAIR_TYPE_OPTIONS} from '@/domain/form/constants/formConstants';
+import {ChevronRight, Info} from 'lucide-react';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
@@ -29,10 +29,13 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import {scrollToFirstError} from '@/utils/formHelpers';
-import { useFormPersistence } from '@/hooks/useFormPersistence';
+import {useFormPersistence} from '@/hooks/useFormPersistence';
+import {FormBlock, FormCard, FormItemWrapper} from '@/components/ui/form-block';
+import {Switch} from '@/components/ui/switch';
 
 const FormIntakeRebacarePage = () => {
   const router = useRouter();
@@ -41,11 +44,11 @@ const FormIntakeRebacarePage = () => {
   const clientData = useAppSelector(state => state.formData.client);
 
   const formSchema = z.object({
-    welkPaar: z.string(),
+    whichPair: z.string(),
     side: z.enum(['left', 'right', 'both'] as const),
-    medischeIndicatie: z.string().optional(),
-    gezwachteld: z.boolean(),
-    bijzonderheden: z.string().optional(),
+    medicalIndication: z.string().optional(),
+    bandagedFoot: z.boolean(),
+    specialNotes: z.string().optional(),
   });
 
   type FormData = z.infer<typeof formSchema>;
@@ -54,22 +57,32 @@ const FormIntakeRebacarePage = () => {
     resolver: zodResolver(formSchema),
     shouldFocusError: true,
     defaultValues: {
-      welkPaar: 'Eerste paar',
+      whichPair: 'Eerste paar',
       side: 'both',
-      medischeIndicatie: '',
-      gezwachteld: false,
-      bijzonderheden: '',
+      medicalIndication: '',
+      bandagedFoot: false,
+      specialNotes: '',
     },
   });
 
-  const onSubmit = (data: FormData) => {
-    clearStorage();
+  const {clearStorage} = useFormPersistence(
+    'intakeRebacare',
+    form.watch,
+    form.setValue,
+  );
 
+  const handleResetDraft = () => {
+    clearStorage();
+    form.reset();
+  };
+
+  const onSubmit = (data: FormData) => {
     if (clientData) {
       dispatch(setClientData({...clientData, intakeType: 'Rebacare'}));
     }
     dispatch(setIntakeRebacareData(data));
-    router.push(Routes.form_results);
+    clearStorage();
+    void router.push(Routes.form_results);
   };
 
   return (
@@ -90,196 +103,154 @@ const FormIntakeRebacarePage = () => {
               onSubmit={form.handleSubmit(onSubmit, scrollToFirstError)}
               className="space-y-6"
             >
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('whichPair')}</CardTitle>
-                  <CardDescription>
-                    Select which pair this intake is for
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="welkPaar"
-                    render={({field}) => (
-                      <FormItem>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            value={field.value}
+              {/* Paartype & indicatie */}
+              <FormCard title={t('description')} description={t('whichPair')}>
+                <FormBlock columns={2} dividers={true} alignItems="start">
+                  {/* Which Pair (Radio Group) */}
+                  <FormItemWrapper label={t('whichPair')}>
+                    <RadioGroup
+                      value={form.watch('whichPair')}
+                      onValueChange={val => form.setValue('whichPair', val)}
+                      className="w-2/3"
+                    >
+                      <div className="flex flex-col gap-3">
+                        {PAIR_TYPE_OPTIONS.map(option => (
+                          <Label
+                            key={option.value}
+                            className="flex items-center gap-3 rounded-md border bg-background px-3 py-2 cursor-pointer hover:bg-accent/30 transition-colors"
+                            htmlFor={`ov-${option.value}`}
                           >
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {PAARTYPE_OPTIES.map(option => (
-                                <div
-                                  key={option.value}
-                                  className="flex items-center space-x-2"
-                                >
-                                  <RadioGroupItem
-                                    value={option.value}
-                                    id={`paar-${option.value}`}
-                                  />
-                                  <Label
-                                    htmlFor={`paar-${option.value}`}
-                                    className="font-normal cursor-pointer"
+                            <RadioGroupItem
+                              id={`ov-${option.value}`}
+                              value={option.value}
+                            />
+                            <span className="text-sm text-foreground">
+                              {t(option.label)}
+                            </span>
+                          </Label>
+                        ))}
+                      </div>
+                    </RadioGroup>
+                  </FormItemWrapper>
+
+                  {/* Medical Indication (Textarea) */}
+                  <FormItemWrapper label={t('medicalIndication')}>
+                    <Textarea
+                      id="medische-indicatie"
+                      placeholder={t('medicalIndicationPlaceholder')}
+                      value={form.watch('medicalIndication')}
+                      onChange={e =>
+                        form.setValue('medicalIndication', e.target.value)
+                      }
+                      rows={4}
+                      className="w-2/3"
+                    />
+                  </FormItemWrapper>
+                </FormBlock>
+              </FormCard>
+
+              {/* Side & Bandaged */}
+              <FormCard title={t('side') + ' & ' + t('bandaged')}>
+                <FormBlock columns={2} dividers={true}>
+                  {/* Side (Radio Group) */}
+                  <FormItemWrapper>
+                    <Label>{t('side')}</Label>
+                    <FormField
+                      control={form.control}
+                      name="side"
+                      render={({field}) => (
+                        <FormItem>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <div className="flex gap-6">
+                                {['both', 'left', 'right'].map(s => (
+                                  <div
+                                    key={s}
+                                    className="flex items-center space-x-2"
                                   >
-                                    {t(
-                                      option.value
-                                        .toLowerCase()
-                                        .replace(/ /g, ''),
-                                    )}
-                                  </Label>
-                                </div>
-                              ))}
+                                    <RadioGroupItem
+                                      value={s}
+                                      id={`side-${s}`}
+                                    />
+                                    <Label
+                                      htmlFor={`side-${s}`}
+                                      className="font-normal cursor-pointer"
+                                    >
+                                      {t(s)}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </div>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormItemWrapper>
+
+                  {/* Bandaged Switch */}
+                  <FormItemWrapper>
+                    <FormLabel>{t('bandaged')}</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="bandagedFoot"
+                      render={({field}) => (
+                        <FormItem className="flex flex-col items-center">
+                          <FormControl>
+                            <div className="flex flex-col-2 items-center justify-center space-x-2">
+                              <Switch
+                                id="bandagedFoot-switch"
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                              <Label
+                                htmlFor="bandagedFoot-switch"
+                                className="font-normal cursor-pointer"
+                              >
+                                {field.value ? t('yes') : t('no')}
+                              </Label>
                             </div>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </FormItemWrapper>
+                </FormBlock>
+              </FormCard>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('side')}</CardTitle>
-                  <CardDescription>
-                    Select which side (left, right, or both)
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="side"
-                    render={({field}) => (
-                      <FormItem>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <div className="flex gap-6">
-                              {['both', 'left', 'right'].map(s => (
-                                <div
-                                  key={s}
-                                  className="flex items-center space-x-2"
-                                >
-                                  <RadioGroupItem value={s} id={`side-${s}`} />
-                                  <Label
-                                    htmlFor={`side-${s}`}
-                                    className="font-normal cursor-pointer"
-                                  >
-                                    {t(s)}
-                                  </Label>
-                                </div>
-                              ))}
-                            </div>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('medicalIndication')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="medischeIndicatie"
-                    render={({field}) => (
-                      <FormItem>
-                        <FormControl>
-                          <Textarea
-                            placeholder={t('medicalIndicationPlaceholder')}
-                            rows={4}
-                            className="resize-none"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('bandaged')}</CardTitle>
-                  <CardDescription>
-                    Is the affected area bandaged?
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="gezwachteld"
-                    render={({field}) => (
-                      <FormItem>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={v => field.onChange(v === 'yes')}
-                            value={field.value ? 'yes' : 'no'}
-                          >
-                            <div className="flex gap-6">
-                              {['yes', 'no'].map(v => (
-                                <div
-                                  key={v}
-                                  className="flex items-center space-x-2"
-                                >
-                                  <RadioGroupItem
-                                    value={v}
-                                    id={`bandaged-${v}`}
-                                  />
-                                  <Label
-                                    htmlFor={`bandaged-${v}`}
-                                    className="font-normal cursor-pointer"
-                                  >
-                                    {t(v)}
-                                  </Label>
-                                </div>
-                              ))}
-                            </div>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('specialNotes')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="bijzonderheden"
-                    render={({field}) => (
-                      <FormItem>
-                        <FormControl>
-                          <Textarea
-                            placeholder={t('specialNotesPlaceholder')}
-                            rows={5}
-                            className="resize-none"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+              {/* Special Notes */}
+              <FormCard title={t('specialNotes')}>
+                <FormField
+                  control={form.control}
+                  name="specialNotes"
+                  render={({field}) => (
+                    <FormItem>
+                      <FormControl>
+                        <Textarea
+                          placeholder={t('specialNotesPlaceholder')}
+                          rows={5}
+                          className="resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </FormCard>
 
               <FormFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleResetDraft}
+                >
+                  {t('reset')}
+                </Button>
                 <Button
                   type="button"
                   variant="outline"

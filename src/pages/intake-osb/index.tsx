@@ -5,13 +5,6 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Textarea} from '@/components/ui/textarea';
 import {Checkbox} from '@/components/ui/checkbox';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import {RadioGroup, RadioGroupItem} from '@/components/ui/radio-group';
 import {
   Select,
@@ -20,18 +13,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {Separator} from '@/components/ui/separator';
+import {FormCard, FormBlock, FormItemWrapper} from '@/components/ui/form-block';
+import {DatePicker} from '@/components/ui/date-picker';
 import useTranslation from 'next-translate/useTranslation';
 import {useRouter} from 'next/router';
 import {Routes} from '@/lib/routes';
 import {
-  PAARTYPE_OPTIES,
-  DOEL_OPTIES,
-  LOOPFUNCTIE_INDICATIE_OPTIES,
-  LEVERANCIER_OPTIES,
-  BASISCODE_OPTIES,
-  STEUNZOOL_TYPE_OPTIES,
-} from '@/lib/constants/formConstants';
+  PAIR_TYPE_OPTIONS,
+  GOAL_OPTIONS,
+  WALKING_FUNCTION_INDICATION_OPTIONS,
+  SUPPLIER_OPTIONS,
+  INSOLE_TYPE_OPTIONS,
+  MIDFOOT_CORRECTION_OPTIONS,
+  FOREFOOT_CORRECTION_OPTIONS,
+  PELOTTE_OPTIONS,
+} from '@/domain/form/constants/formConstants';
 import {useAppDispatch, useAppSelector} from '@/domain/store/hooks';
 import {setIntakeOSBData, setClientData} from '@/domain/store/slices/formData';
 
@@ -41,7 +37,7 @@ import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
 import {Form} from '@/components/ui/form';
 import {scrollToFirstError} from '@/utils/formHelpers';
-import { useFormPersistence } from '@/hooks/useFormPersistence';
+import {useFormPersistence} from '@/hooks/useFormPersistence';
 
 const FormIntakeOSBPage = () => {
   const router = useRouter();
@@ -50,47 +46,54 @@ const FormIntakeOSBPage = () => {
   const clientData = useAppSelector(state => state.formData.client);
 
   const formSchema = z.object({
-    ordernummer: z.string().optional(),
-    welkPaar: z.string(),
-    medischeIndicatie: z.string().optional(),
-    doel: z.record(z.string(), z.boolean()),
-    loopfunctieIndicatie: z.string().optional(),
-    loopfunctieAndersText: z.string().optional(),
-    leverancierNaam: z.string().optional(),
-    bestelDatum: z.string().optional(),
-    productSpecificaties: z.object({
-      artCode: z.string().optional(),
-      lengteMaat: z.string().optional(),
-      wijdte: z.string().optional(),
-      kleur: z.string().optional(),
-      sluiting: z.string().optional(),
+    whichPair: z.string(),
+    medicalIndication: z.string().optional(),
+    side: z.enum(['left', 'right', 'both'] as const).optional(),
+
+    // Functieonderzoek
+    goal: z.record(z.string(), z.boolean()),
+    walkingFunctionIndication: z.string().optional(),
+    walkingFunctionOtherText: z.string().optional(),
+
+    // Supplier and Product
+    supplierName: z.string().optional(),
+    orderDate: z.string().optional(),
+    productSpecifications: z.object({
+      articleCode: z.string().optional(),
+      lengthSize: z.string().optional(),
+      width: z.string().optional(),
+      color: z.string().optional(),
+      closure: z.string().optional(),
     }),
-    basiscode: z.string().optional(),
-    generalBasiscode: z.string().optional(),
-    aanpassingen: z.object({
-      zoolverstijvingLinks: z.boolean().optional(),
-      zoolverstijvingRechts: z.boolean().optional(),
-      halluxValgusLinks: z.boolean().optional(),
-      halluxValgusRechts: z.boolean().optional(),
-      verdiepingVoorvoetLinks: z.boolean().optional(),
-      verdiepingVoorvoetRechts: z.boolean().optional(),
-      supplementIndividueelLinks: z.boolean().optional(),
-      supplementIndividueelRechts: z.boolean().optional(),
-      afwikkelrolEenvoudigLinks: z.boolean().optional(),
-      afwikkelrolEenvoudigRechts: z.boolean().optional(),
-      afwikkelrolGecompliceerdLinks: z.boolean().optional(),
-      afwikkelrolGecompliceerdRechts: z.boolean().optional(),
-    }),
-    steunzoolTypeGeneral: z.string().optional(),
-    steunzoolAndersText: z.string().optional(),
-    steunzoolCorrectieMiddenvoet: z.string().optional(),
-    steunzoolCorrectieVoorvoet: z.string().optional(),
-    steunzoolVvPellote: z.string().optional(),
-    steunzoolHakVerhogingLinks: z.string().optional(),
-    steunzoolHakVerhogingRechts: z.string().optional(),
-    steunzoolPrijs: z.number().optional(),
-    steunzoolPrijsNaam: z.string().optional(),
-    bijzonderheden: z.string().optional(),
+
+    // Steunzolen/Talonette Section
+    heelRaiseEnabled: z.boolean().optional(),
+    heelRaiseLeft: z.string().optional(),
+    heelRaiseRight: z.string().optional(),
+
+    insoleEnabled: z.boolean().optional(),
+    insoleTypeGeneral: z.string().optional(),
+    insoleOtherText: z.string().optional(),
+    insoleMidfootCorrection: z.string().optional(),
+    insoleForefootCorrection: z.string().optional(),
+    insoleForefootPad: z.string().optional(),
+
+    // Supplement (van leest)
+    supplementIndividueelEnabled: z.boolean().optional(),
+    customInsoleIndividualLeft: z.boolean().optional(),
+    customInsoleIndividualRight: z.boolean().optional(),
+
+    // Zoolverstijving
+    soleReinforcementEnabled: z.boolean().optional(),
+    soleReinforcementLeft: z.boolean().optional(),
+    soleReinforcementRight: z.boolean().optional(),
+
+    // Afwikkelrol (onder schoen)
+    afwikkelrolEnabled: z.boolean().optional(),
+    rockerRollCmLeft: z.string().optional(),
+    rockerRollCmRight: z.string().optional(),
+
+    specialNotes: z.string().optional(),
   });
 
   type FormData = z.infer<typeof formSchema>;
@@ -99,104 +102,144 @@ const FormIntakeOSBPage = () => {
     resolver: zodResolver(formSchema),
     shouldFocusError: true,
     defaultValues: {
-      ordernummer: '',
-      welkPaar: 'Eerste paar',
-      medischeIndicatie: '',
-      doel: {},
-      loopfunctieIndicatie: LOOPFUNCTIE_INDICATIE_OPTIES[0]?.value || '',
-      loopfunctieAndersText: '',
-      leverancierNaam: '',
-      bestelDatum: '',
-      productSpecificaties: {
-        artCode: '',
-        lengteMaat: '',
-        wijdte: '',
-        kleur: '',
-        sluiting: '',
+      whichPair: PAIR_TYPE_OPTIONS[0]?.value || 'Eerste paar',
+      medicalIndication: '',
+      side: 'both',
+
+      // Functieonderzoek
+      goal: {},
+      walkingFunctionIndication: '',
+      walkingFunctionOtherText: '',
+
+      // Supplier and Product
+      supplierName: '',
+      orderDate: new Date().toISOString().split('T')[0],
+      productSpecifications: {
+        articleCode: '',
+        lengthSize: '',
+        width: '',
+        color: '',
+        closure: '',
       },
-      basiscode: '',
-      generalBasiscode: BASISCODE_OPTIES[0]?.value || '',
-      aanpassingen: {
-        zoolverstijvingLinks: false,
-        zoolverstijvingRechts: false,
-        halluxValgusLinks: false,
-        halluxValgusRechts: false,
-        verdiepingVoorvoetLinks: false,
-        verdiepingVoorvoetRechts: false,
-        supplementIndividueelLinks: false,
-        supplementIndividueelRechts: false,
-        afwikkelrolEenvoudigLinks: false,
-        afwikkelrolEenvoudigRechts: false,
-        afwikkelrolGecompliceerdLinks: false,
-        afwikkelrolGecompliceerdRechts: false,
-      },
-      steunzoolTypeGeneral: STEUNZOOL_TYPE_OPTIES[0]?.value || '',
-      steunzoolAndersText: '',
-      steunzoolCorrectieMiddenvoet: '',
-      steunzoolCorrectieVoorvoet: '',
-      steunzoolVvPellote: '',
-      steunzoolHakVerhogingLinks: '',
-      steunzoolHakVerhogingRechts: '',
-      steunzoolPrijs: undefined,
-      steunzoolPrijsNaam: '',
-      bijzonderheden: '',
+
+      // Steunzolen/Talonette Section
+      heelRaiseEnabled: false,
+      heelRaiseLeft: '',
+      heelRaiseRight: '',
+
+      insoleEnabled: false,
+      insoleTypeGeneral: '',
+      insoleOtherText: '',
+      insoleMidfootCorrection: '',
+      insoleForefootCorrection: '',
+      insoleForefootPad: '',
+
+      // Supplement (van leest)
+      supplementIndividueelEnabled: false,
+      customInsoleIndividualLeft: false,
+      customInsoleIndividualRight: false,
+
+      // Zoolverstijving
+      soleReinforcementEnabled: false,
+      soleReinforcementLeft: false,
+      soleReinforcementRight: false,
+
+      // Afwikkelrol (onder schoen)
+      afwikkelrolEnabled: false,
+      rockerRollCmLeft: '',
+      rockerRollCmRight: '',
+
+      specialNotes: '',
     },
   });
 
-  const onSubmit = (data: FormData) => {
-    clearStorage();
+  // Persist form state to localStorage (survives refresh)
+  const {clearStorage} = useFormPersistence(
+    'intakeOSB',
+    form.watch,
+    form.setValue,
+  );
 
+  const handleResetDraft = () => {
+    clearStorage();
+    form.reset();
+  };
+
+  const onSubmit = (data: FormData) => {
     if (clientData) {
       dispatch(setClientData({...clientData, intakeType: 'OSB'}));
     }
 
     dispatch(
       setIntakeOSBData({
-        ordernummer: data.ordernummer || '',
-        welkPaar: data.welkPaar,
-        medischeIndicatie: data.medischeIndicatie || '',
-        doel: data.doel as Record<string, boolean>,
-        loopfunctieIndicatie: data.loopfunctieIndicatie || '',
-        loopfunctieAndersText: data.loopfunctieAndersText || '',
-        leverancierNaam: data.leverancierNaam || '',
-        bestelDatum: data.bestelDatum || '',
-        productSpecificaties: {
-          artCode: data.productSpecificaties?.artCode || '',
-          lengteMaat: data.productSpecificaties?.lengteMaat || '',
-          wijdte: data.productSpecificaties?.wijdte || '',
-          kleur: data.productSpecificaties?.kleur || '',
-          sluiting: data.productSpecificaties?.sluiting || '',
+        whichPair: data.whichPair,
+        medicalIndication: data.medicalIndication || '',
+        side: data.side || 'both',
+
+        // Functieonderzoek
+        goal: data.goal as Record<string, boolean>,
+        walkingFunctionIndication: data.walkingFunctionIndication || '',
+        walkingFunctionOtherText: data.walkingFunctionOtherText || '',
+
+        // Supplier and Product
+        supplierName: data.supplierName || '',
+        orderDate: data.orderDate || '',
+        productSpecifications: {
+          articleCode: data.productSpecifications?.articleCode || '',
+          lengthSize: data.productSpecifications?.lengthSize || '',
+          width: data.productSpecifications?.width || '',
+          color: data.productSpecifications?.color || '',
+          closure: data.productSpecifications?.closure || '',
         },
-        basiscode: data.basiscode || '',
-        generalBasiscode: data.generalBasiscode || '',
-        aanpassingen: {
-          zoolverstijvingLinks: data.aanpassingen?.zoolverstijvingLinks || false,
-          zoolverstijvingRechts: data.aanpassingen?.zoolverstijvingRechts || false,
-          halluxValgusLinks: data.aanpassingen?.halluxValgusLinks || false,
-          halluxValgusRechts: data.aanpassingen?.halluxValgusRechts || false,
-          verdiepingVoorvoetLinks: data.aanpassingen?.verdiepingVoorvoetLinks || false,
-          verdiepingVoorvoetRechts: data.aanpassingen?.verdiepingVoorvoetRechts || false,
-          supplementIndividueelLinks: data.aanpassingen?.supplementIndividueelLinks || false,
-          supplementIndividueelRechts: data.aanpassingen?.supplementIndividueelRechts || false,
-          afwikkelrolEenvoudigLinks: data.aanpassingen?.afwikkelrolEenvoudigLinks || false,
-          afwikkelrolEenvoudigRechts: data.aanpassingen?.afwikkelrolEenvoudigRechts || false,
-          afwikkelrolGecompliceerdLinks: data.aanpassingen?.afwikkelrolGecompliceerdLinks || false,
-          afwikkelrolGecompliceerdRechts: data.aanpassingen?.afwikkelrolGecompliceerdRechts || false,
-        },
-        steunzoolTypeGeneral: data.steunzoolTypeGeneral || '',
-        steunzoolAndersText: data.steunzoolAndersText || '',
-        steunzoolCorrectieMiddenvoet: data.steunzoolCorrectieMiddenvoet || '',
-        steunzoolCorrectieVoorvoet: data.steunzoolCorrectieVoorvoet || '',
-        steunzoolVvPellote: data.steunzoolVvPellote || '',
-        steunzoolHakVerhogingLinks: data.steunzoolHakVerhogingLinks || '',
-        steunzoolHakVerhogingRechts: data.steunzoolHakVerhogingRechts || '',
-        steunzoolPrijs: data.steunzoolPrijs,
-        steunzoolPrijsNaam: data.steunzoolPrijsNaam || '',
-        bijzonderheden: data.bijzonderheden || '',
+
+        // Steunzolen/Talonette (conditional based on toggle)
+        heelRaiseLeft: data.heelRaiseEnabled ? data.heelRaiseLeft || '' : '',
+        heelRaiseRight: data.heelRaiseEnabled ? data.heelRaiseRight || '' : '',
+        insoleTypeGeneral: data.insoleEnabled
+          ? data.insoleTypeGeneral || ''
+          : '',
+        insoleOtherText: data.insoleEnabled ? data.insoleOtherText || '' : '',
+        insoleMidfootCorrection: data.insoleEnabled
+          ? data.insoleMidfootCorrection || ''
+          : '',
+        insoleForefootCorrection: data.insoleEnabled
+          ? data.insoleForefootCorrection || ''
+          : '',
+        insoleForefootPad: data.insoleEnabled
+          ? data.insoleForefootPad || ''
+          : '',
+
+        // Supplement (conditional based on toggle)
+        customInsoleIndividualLeft: data.supplementIndividueelEnabled
+          ? !!data.customInsoleIndividualLeft
+          : false,
+        customInsoleIndividualRight: data.supplementIndividueelEnabled
+          ? !!data.customInsoleIndividualRight
+          : false,
+
+        // Zoolverstijving (conditional based on toggle)
+        soleReinforcementLeft: data.soleReinforcementEnabled
+          ? !!data.soleReinforcementLeft
+          : false,
+        soleReinforcementRight: data.soleReinforcementEnabled
+          ? !!data.soleReinforcementRight
+          : false,
+
+        // Afwikkelrol (conditional based on toggle)
+        rockerRollCmLeft: data.afwikkelrolEnabled
+          ? data.rockerRollCmLeft || ''
+          : '',
+        rockerRollCmRight: data.afwikkelrolEnabled
+          ? data.rockerRollCmRight || ''
+          : '',
+
+        specialNotes: data.specialNotes || '',
       }),
     );
 
-    router.push(Routes.form_results);
+    clearStorage();
+
+    void router.push(Routes.form_results);
   };
 
   return (
@@ -207,865 +250,656 @@ const FormIntakeOSBPage = () => {
           <h1 className="text-4xl font-bold text-foreground">
             {t('intakeOsb')}
           </h1>
-          <p className="text-lg text-muted-foreground">
-            {t('osbDescription')}
-          </p>
+          <p className="text-lg text-muted-foreground">{t('osbDescription')}</p>
         </div>
 
-        <FormSection>
+        <FormSection className="max-w-6xl mx-auto">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit, scrollToFirstError)}
               className="space-y-6"
             >
-              {/* Order Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('orderInformation')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="ordernummer">{t('orderNumber')}</Label>
-                      <Input
-                        id="ordernummer"
-                        placeholder={t('orderNumber')}
-                        value={form.watch('ordernummer')}
-                        onChange={e =>
-                          form.setValue('ordernummer', e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="welk-paar">{t('whichPair')}</Label>
-                      <RadioGroup
-                        value={form.watch('welkPaar')}
-                        onValueChange={v => form.setValue('welkPaar', v)}
-                      >
-                        <div className="grid gap-3">
-                          {PAARTYPE_OPTIES.map(option => (
-                            <div
-                              key={option.value}
-                              className="flex items-center space-x-2"
-                            >
-                              <RadioGroupItem
-                                value={option.value}
-                                id={`paar-${option.value}`}
-                              />
-                              <Label
-                                htmlFor={`paar-${option.value}`}
-                                className="font-normal cursor-pointer"
-                              >
-                                {t(option.label)}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                      </RadioGroup>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Section 0.1: Description and which pair */}
+              <FormCard title={t('description')} description={t('whichPair')}>
+                <FormBlock columns={2} dividers={true} alignItems="start">
+                  {/* Which Pair (Radio Group) */}
+                  <FormItemWrapper label={t('whichPair')}>
+                    <RadioGroup
+                      value={form.watch('whichPair')}
+                      onValueChange={val => form.setValue('whichPair', val)}
+                      className="w-2/3"
+                    >
+                      <div className="flex flex-col gap-3">
+                        {PAIR_TYPE_OPTIONS.map(option => (
+                          <Label
+                            key={option.value}
+                            className="flex items-center gap-3 rounded-md border bg-background px-3 py-2 cursor-pointer hover:bg-accent/30 transition-colors"
+                            htmlFor={`osb-${option.value}`}
+                          >
+                            <RadioGroupItem
+                              id={`osb-${option.value}`}
+                              value={option.value}
+                            />
+                            <span className="text-sm text-foreground">
+                              {t(option.label)}
+                            </span>
+                          </Label>
+                        ))}
+                      </div>
+                    </RadioGroup>
+                  </FormItemWrapper>
 
-              {/* Medical Indication */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('medicalIndication')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    placeholder={t('medicalIndicationPlaceholder')}
-                    value={form.watch('medischeIndicatie')}
-                    onChange={e =>
-                      form.setValue('medischeIndicatie', e.target.value)
-                    }
-                    rows={3}
-                    className="resize-none"
-                  />
-                </CardContent>
-              </Card>
+                  {/* Medical Indication (Textarea) */}
+                  <FormItemWrapper label={t('medicalIndication')}>
+                    <Textarea
+                      id="medische-indicatie"
+                      placeholder={t('medicalIndicationPlaceholder')}
+                      value={form.watch('medicalIndication')}
+                      onChange={e =>
+                        form.setValue('medicalIndication', e.target.value)
+                      }
+                      rows={4}
+                      className="w-2/3"
+                    />
+                  </FormItemWrapper>
+                </FormBlock>
+              </FormCard>
 
-              {/* Goals/Objectives */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('goals')}</CardTitle>
-                  <CardDescription>{t('goalsDescription')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {DOEL_OPTIES.map(optie => (
-                      <div
-                        key={optie.fullKey}
-                        className="flex items-center space-x-2"
-                      >
-                        <Checkbox
-                          id={`doel-${optie.fullKey}`}
-                          checked={
-                            (form.watch('doel')[optie.fullKey] as boolean) ||
-                            false
-                          }
-                          onCheckedChange={checked =>
-                            form.setValue('doel', {
-                              ...form.getValues('doel'),
-                              [optie.fullKey]: !!checked,
-                            })
-                          }
-                        />
-                        <Label
-                          htmlFor={`doel-${optie.fullKey}`}
-                          className="font-normal cursor-pointer"
-                        >
-                          {optie.label}
+              {/* Section 0.2: Left/Right/Both selector */}
+              <FormCard
+                title={t('side')}
+                description={t('chooseSideDescription')}
+              >
+                <FormBlock columns={1} alignItems="center">
+                  <FormItemWrapper>
+                    <RadioGroup
+                      value={form.watch('side') || 'both'}
+                      onValueChange={val =>
+                        form.setValue('side', val as 'left' | 'right' | 'both')
+                      }
+                    >
+                      <div className="flex gap-6 justify-center">
+                        <Label className="flex items-center gap-2 cursor-pointer">
+                          <RadioGroupItem value="both" />
+                          {t('both')}
+                        </Label>
+                        <Label className="flex items-center gap-2 cursor-pointer">
+                          <RadioGroupItem value="left" />
+                          {t('left')}
+                        </Label>
+                        <Label className="flex items-center gap-2 cursor-pointer">
+                          <RadioGroupItem value="right" />
+                          {t('right')}
                         </Label>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                    </RadioGroup>
+                  </FormItemWrapper>
+                </FormBlock>
+              </FormCard>
 
-              {/* Walking Function */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('walkingFunction')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>{t('walkingFunctionIndication')}</Label>
-                      <Select
-                        value={form.watch('loopfunctieIndicatie') || ''}
-                        onValueChange={v =>
-                          form.setValue('loopfunctieIndicatie', v)
+              {/* Functieonderzoek */}
+              <FormCard
+                title={t('functionalResearch')}
+                description={t('functionalResearchDescription')}
+              >
+                {/* Doel (Goals) */}
+                <FormBlock
+                  title={t('goals')}
+                  columns={4}
+                  dividers={false}
+                  centerTitle={true}
+                >
+                  {GOAL_OPTIONS.map(optie => (
+                    <Label
+                      key={optie.fullKey}
+                      className="flex items-center space-x-2 rounded-md border bg-foreground/5 px-3 py-2 cursor-pointer hover:bg-accent/30 transition-colors has-aria-checked:bg-accent/30"
+                    >
+                      <Checkbox
+                        id={`goal-${optie.fullKey}`}
+                        checked={
+                          (form.watch('goal')[optie.fullKey] as boolean) ||
+                          false
                         }
-                      >
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={t('walkingFunctionIndication')}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {LOOPFUNCTIE_INDICATIE_OPTIES.map(opt => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="loopfunctie-anders">
-                        {t('otherWalkingFunction')}
-                      </Label>
+                        onCheckedChange={checked =>
+                          form.setValue('goal', {
+                            ...form.getValues('goal'),
+                            [optie.fullKey]: !!checked,
+                          })
+                        }
+                        className=""
+                      />
+                      <div className="grid gap-1.5 font-normal">
+                        <p className="text-sm leading-none">{optie.label}</p>
+                      </div>
+                    </Label>
+                  ))}
+                </FormBlock>
+
+                {/* Loopfunctie */}
+                <FormBlock title={t('walkingFunction')} centerTitle={true}>
+                  <FormItemWrapper>
+                    <Select
+                      value={form.watch('walkingFunctionIndication') || ''}
+                      onValueChange={v =>
+                        form.setValue('walkingFunctionIndication', v)
+                      }
+                    >
+                      <SelectTrigger className="w-2/3">
+                        <SelectValue
+                          placeholder={t('walkingFunctionIndication')}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {WALKING_FUNCTION_INDICATION_OPTIONS.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItemWrapper>
+                </FormBlock>
+
+                {/* Conditional "Anders" textarea */}
+                {form.watch('walkingFunctionIndication') === 'Anders' && (
+                  <FormBlock centerTitle={false}>
+                    <FormItemWrapper label={t('otherWalkingFunction')}>
                       <Textarea
                         id="loopfunctie-anders"
                         placeholder={t('otherWalkingFunctionPlaceholder')}
-                        value={form.watch('loopfunctieAndersText')}
+                        value={form.watch('walkingFunctionOtherText')}
                         onChange={e =>
-                          form.setValue('loopfunctieAndersText', e.target.value)
+                          form.setValue(
+                            'walkingFunctionOtherText',
+                            e.target.value,
+                          )
                         }
                         rows={2}
-                        className="resize-none"
+                        className="w-2/3 resize-none"
                       />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Supplier and Order Date */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('supplierAndOrderDate')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label>{t('supplier')}</Label>
-                      <Select
-                        value={form.watch('leverancierNaam') || ''}
-                        onValueChange={v => form.setValue('leverancierNaam', v)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('supplier')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {LEVERANCIER_OPTIES.map(opt => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="bestel-datum">{t('orderDate')}</Label>
-                      <Input
-                        id="bestel-datum"
-                        type="date"
-                        value={form.watch('bestelDatum')}
-                        onChange={e =>
-                          form.setValue('bestelDatum', e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    </FormItemWrapper>
+                  </FormBlock>
+                )}
+              </FormCard>
 
               {/* Product Specifications */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('productSpecifications')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="art-code">{t('articleCode')}</Label>
-                      <Input
-                        id="art-code"
-                        placeholder={t('articleCode')}
-                        value={
-                          form.watch('productSpecificaties')?.artCode || ''
-                        }
+              <FormCard title={t('productSpecifications')}>
+                {/* Supplier and Order Date */}
+                <FormBlock columns={2} dividers={true} hoverEffect={true}>
+                  <FormItemWrapper label={t('supplier')}>
+                    <Select
+                      value={form.watch('supplierName') || ''}
+                      onValueChange={v => form.setValue('supplierName', v)}
+                    >
+                      <SelectTrigger className="w-2/3">
+                        <SelectValue placeholder={t('supplier')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SUPPLIER_OPTIONS.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItemWrapper>
+
+                  <FormItemWrapper label={t('orderDate')}>
+                    <DatePicker
+                      value={
+                        form.watch('orderDate') &&
+                        form.watch('orderDate') !== ''
+                          ? new Date(form.watch('orderDate')!)
+                          : undefined
+                      }
+                      onChange={selectedDate =>
+                        form.setValue(
+                          'orderDate',
+                          selectedDate
+                            ? selectedDate.toISOString().split('T')[0]
+                            : '',
+                        )
+                      }
+                      placeholder={t('selectDate')}
+                      disabled={d => d > new Date()}
+                      className="w-2/3"
+                    />
+                  </FormItemWrapper>
+                </FormBlock>
+
+                {/* Product Details */}
+                <FormBlock columns={2} dividers={true} hoverEffect={true}>
+                  <FormItemWrapper label={t('articleCode')}>
+                    <Input
+                      id="art-code"
+                      placeholder={t('articleCode')}
+                      value={
+                        form.watch('productSpecifications')?.articleCode || ''
+                      }
+                      onChange={e =>
+                        form.setValue('productSpecifications', {
+                          ...form.getValues('productSpecifications'),
+                          articleCode: e.target.value,
+                        })
+                      }
+                      className="w-2/3"
+                    />
+                  </FormItemWrapper>
+
+                  <FormItemWrapper label={t('color')}>
+                    <Input
+                      id="color-osb"
+                      placeholder={t('color')}
+                      value={form.watch('productSpecifications')?.color || ''}
+                      onChange={e =>
+                        form.setValue('productSpecifications', {
+                          ...form.getValues('productSpecifications'),
+                          color: e.target.value,
+                        })
+                      }
+                      className="w-2/3"
+                    />
+                  </FormItemWrapper>
+                </FormBlock>
+
+                <FormBlock columns={3} dividers={true} hoverEffect={true}>
+                  <FormItemWrapper label={t('width')}>
+                    <Input
+                      id="width"
+                      placeholder={t('width')}
+                      value={form.watch('productSpecifications')?.width || ''}
+                      onChange={e =>
+                        form.setValue('productSpecifications', {
+                          ...form.getValues('productSpecifications'),
+                          width: e.target.value,
+                        })
+                      }
+                      className="w-2/3"
+                    />
+                  </FormItemWrapper>
+
+                  <FormItemWrapper label={t('lengthSize')}>
+                    <Input
+                      id="lengte-maat"
+                      placeholder={t('lengthSize')}
+                      value={
+                        form.watch('productSpecifications')?.lengthSize || ''
+                      }
+                      onChange={e =>
+                        form.setValue('productSpecifications', {
+                          ...form.getValues('productSpecifications'),
+                          lengthSize: e.target.value,
+                        })
+                      }
+                      className="w-2/3"
+                    />
+                  </FormItemWrapper>
+
+                  <FormItemWrapper label={t('closure')}>
+                    <Input
+                      id="closure-osb"
+                      placeholder={t('closure')}
+                      value={form.watch('productSpecifications')?.closure || ''}
+                      onChange={e =>
+                        form.setValue('productSpecifications', {
+                          ...form.getValues('productSpecifications'),
+                          closure: e.target.value,
+                        })
+                      }
+                      className="w-2/3"
+                    />
+                  </FormItemWrapper>
+                </FormBlock>
+              </FormCard>
+
+              {/* Steunzolen/Talonette Section (Combined) */}
+              <FormCard
+                title={t('insolesAndTalonette')}
+                description={t('insolesAndTalonetteDescription')}
+                toggleAble={true}
+                toggleLabel={t('addInsolesOrTalonette')}
+                toggleId="steunzolen-talonette-toggle"
+                defaultOpen={
+                  form.watch('insoleEnabled') || form.watch('heelRaiseEnabled')
+                }
+                onToggleChange={isOpen => {
+                  form.setValue('insoleEnabled', isOpen);
+                  form.setValue('heelRaiseEnabled', isOpen);
+                  if (!isOpen) {
+                    form.setValue('heelRaiseLeft', '');
+                    form.setValue('heelRaiseRight', '');
+                    form.setValue('insoleTypeGeneral', '');
+                    form.setValue('insoleOtherText', '');
+                    form.setValue('insoleMidfootCorrection', '');
+                    form.setValue('insoleForefootCorrection', '');
+                    form.setValue('insoleForefootPad', '');
+                  }
+                }}
+              >
+                {/* Talonette Heel Raise */}
+                <FormBlock
+                  columns={2}
+                  dividers={true}
+                  title={t('talonetteSection')}
+                >
+                  <FormItemWrapper label={t('insoleHeelRaiseLeft')}>
+                    <Input
+                      id="hak-verhoging-links"
+                      type="number"
+                      step="0.1"
+                      placeholder={t('cmPlaceholder')}
+                      value={form.watch('heelRaiseLeft')}
+                      onChange={e =>
+                        form.setValue('heelRaiseLeft', e.target.value)
+                      }
+                      className="w-2/3"
+                    />
+                  </FormItemWrapper>
+
+                  <FormItemWrapper label={t('insoleHeelRaiseRight')}>
+                    <Input
+                      id="hak-verhoging-rechts"
+                      type="number"
+                      step="0.1"
+                      placeholder={t('cmPlaceholder')}
+                      value={form.watch('heelRaiseRight')}
+                      onChange={e =>
+                        form.setValue('heelRaiseRight', e.target.value)
+                      }
+                      className="w-2/3"
+                    />
+                  </FormItemWrapper>
+                </FormBlock>
+
+                {/* Steunzool Type Selection */}
+                <FormBlock
+                  columns={2}
+                  dividers={true}
+                  title={t('insoleType')}
+                  alignItems="start"
+                >
+                  <FormItemWrapper className="col-span-2">
+                    <Select
+                      value={form.watch('insoleTypeGeneral') || undefined}
+                      onValueChange={val =>
+                        form.setValue('insoleTypeGeneral', val)
+                      }
+                    >
+                      <SelectTrigger className="w-2/3 mt-2">
+                        <SelectValue placeholder={t('insoleType')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INSOLE_TYPE_OPTIONS.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItemWrapper>
+
+                  {form.watch('insoleTypeGeneral') === 'Anders' && (
+                    <FormItemWrapper
+                      label={t('specifyOther')}
+                      className="col-span-2 pt-2"
+                    >
+                      <Textarea
+                        id="steunzool-anders"
+                        placeholder={t('specifyPlaceholder')}
+                        value={form.watch('insoleOtherText')}
                         onChange={e =>
-                          form.setValue('productSpecificaties', {
-                            ...form.getValues('productSpecificaties'),
-                            artCode: e.target.value,
-                          })
+                          form.setValue('insoleOtherText', e.target.value)
+                        }
+                        rows={2}
+                        className="w-2/3 resize-none"
+                      />
+                    </FormItemWrapper>
+                  )}
+                </FormBlock>
+
+                {/* Corrections */}
+                <FormBlock
+                  columns={3}
+                  dividers={true}
+                  title={t('insoleCorrections')}
+                >
+                  <FormItemWrapper label={t('midfootCorrection')}>
+                    <Select
+                      value={form.watch('insoleMidfootCorrection') || undefined}
+                      onValueChange={val =>
+                        form.setValue('insoleMidfootCorrection', val)
+                      }
+                    >
+                      <SelectTrigger className="">
+                        <SelectValue placeholder={t('chooseOption')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MIDFOOT_CORRECTION_OPTIONS.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItemWrapper>
+
+                  <FormItemWrapper label={t('forefootCorrection')}>
+                    <Select
+                      value={
+                        form.watch('insoleForefootCorrection') || undefined
+                      }
+                      onValueChange={val =>
+                        form.setValue('insoleForefootCorrection', val)
+                      }
+                    >
+                      <SelectTrigger className="">
+                        <SelectValue placeholder={t('chooseOption')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FOREFOOT_CORRECTION_OPTIONS.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItemWrapper>
+
+                  <FormItemWrapper label={t('forefootPad')}>
+                    <Select
+                      value={form.watch('insoleForefootPad') || undefined}
+                      onValueChange={val =>
+                        form.setValue('insoleForefootPad', val)
+                      }
+                    >
+                      <SelectTrigger className="">
+                        <SelectValue placeholder={t('chooseOption')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PELOTTE_OPTIONS.map(option => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItemWrapper>
+                </FormBlock>
+              </FormCard>
+
+              {/* Supplement (van leest) */}
+              <FormCard
+                title={t('supplement')}
+                description={t('supplementDescription')}
+                toggleAble={true}
+                toggleLabel={t('addSupplement')}
+                toggleId="supplement-toggle"
+                defaultOpen={form.watch('supplementIndividueelEnabled')}
+                onToggleChange={isOpen => {
+                  form.setValue('supplementIndividueelEnabled', isOpen);
+                  if (!isOpen) {
+                    form.setValue('customInsoleIndividualLeft', false);
+                    form.setValue('customInsoleIndividualRight', false);
+                  }
+                }}
+              >
+                <FormBlock columns={2} dividers={true}>
+                  <FormItemWrapper>
+                    <Label className="flex items-center space-x-2 rounded-md border bg-foreground/5 px-3 py-2 cursor-pointer hover:bg-accent/30 transition-colors">
+                      <Checkbox
+                        id="supplement-links"
+                        checked={!!form.watch('customInsoleIndividualLeft')}
+                        onCheckedChange={checked =>
+                          form.setValue('customInsoleIndividualLeft', !!checked)
                         }
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lengte-maat">{t('lengthSize')}</Label>
-                      <Input
-                        id="lengte-maat"
-                        placeholder={t('lengthSize')}
-                        value={
-                          form.watch('productSpecificaties')?.lengteMaat || ''
-                        }
-                        onChange={e =>
-                          form.setValue('productSpecificaties', {
-                            ...form.getValues('productSpecificaties'),
-                            lengteMaat: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="wijdte">{t('width')}</Label>
-                      <Input
-                        id="wijdte"
-                        placeholder={t('width')}
-                        value={form.watch('productSpecificaties')?.wijdte || ''}
-                        onChange={e =>
-                          form.setValue('productSpecificaties', {
-                            ...form.getValues('productSpecificaties'),
-                            wijdte: e.target.value,
-                          })
+                      <div className="grid gap-1.5 font-normal">
+                        <p className="text-sm leading-none font-medium">
+                          {t('left')}
+                        </p>
+                      </div>
+                    </Label>
+                  </FormItemWrapper>
+
+                  <FormItemWrapper>
+                    <Label className="flex items-center space-x-2 rounded-md border bg-foreground/5 px-3 py-2 cursor-pointer hover:bg-accent/30 transition-colors">
+                      <Checkbox
+                        id="supplement-rechts"
+                        checked={!!form.watch('customInsoleIndividualRight')}
+                        onCheckedChange={checked =>
+                          form.setValue(
+                            'customInsoleIndividualRight',
+                            !!checked,
+                          )
                         }
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="kleur-osb">{t('color')}</Label>
-                      <Input
-                        id="kleur-osb"
-                        placeholder={t('color')}
-                        value={form.watch('productSpecificaties')?.kleur || ''}
-                        onChange={e =>
-                          form.setValue('productSpecificaties', {
-                            ...form.getValues('productSpecificaties'),
-                            kleur: e.target.value,
-                          })
+                      <div className="grid gap-1.5 font-normal">
+                        <p className="text-sm leading-none font-medium">
+                          {t('right')}
+                        </p>
+                      </div>
+                    </Label>
+                  </FormItemWrapper>
+                </FormBlock>
+              </FormCard>
+
+              {/* Zoolverstijving */}
+              <FormCard
+                title={t('soleStiffening')}
+                toggleAble={true}
+                toggleLabel={t('addSoleStiffening')}
+                toggleId="zoolverstijving-toggle"
+                defaultOpen={form.watch('soleReinforcementEnabled')}
+                onToggleChange={isOpen => {
+                  form.setValue('soleReinforcementEnabled', isOpen);
+                  if (!isOpen) {
+                    form.setValue('soleReinforcementLeft', false);
+                    form.setValue('soleReinforcementRight', false);
+                  }
+                }}
+              >
+                <FormBlock columns={2} dividers={true}>
+                  <FormItemWrapper>
+                    <Label className="flex items-center space-x-2 rounded-md border bg-foreground/5 px-3 py-2 cursor-pointer hover:bg-accent/30 transition-colors">
+                      <Checkbox
+                        id="zoolverstijving-links"
+                        checked={!!form.watch('soleReinforcementLeft')}
+                        onCheckedChange={checked =>
+                          form.setValue('soleReinforcementLeft', !!checked)
                         }
                       />
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="sluiting-osb">{t('closure')}</Label>
-                      <Input
-                        id="sluiting-osb"
-                        placeholder={t('closure')}
-                        value={
-                          form.watch('productSpecificaties')?.sluiting || ''
-                        }
-                        onChange={e =>
-                          form.setValue('productSpecificaties', {
-                            ...form.getValues('productSpecificaties'),
-                            sluiting: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Basiscode */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('baseCode')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>{t('generalBaseCode')}</Label>
-                      <Select
-                        value={form.watch('generalBasiscode') || ''}
-                        onValueChange={v =>
-                          form.setValue('generalBasiscode', v)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('generalBaseCode')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {BASISCODE_OPTIES.map(opt => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="basiscode">{t('baseCodeDetails')}</Label>
-                      <Input
-                        id="basiscode"
-                        placeholder={t('baseCodeDetails')}
-                        value={form.watch('basiscode')}
-                        onChange={e => form.setValue('basiscode', e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Aanpassingen (Modifications) */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('modifications')}</CardTitle>
-                  <CardDescription>
-                    {t('modificationsDescription')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    {/* Zoolverstijving */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-semibold">
-                        {t('soleStiffening')}
-                      </Label>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="zoolverstijving-links"
-                            checked={
-                              form.watch('aanpassingen')?.zoolverstijvingLinks ||
-                              false
-                            }
-                            onCheckedChange={checked =>
-                              form.setValue('aanpassingen', {
-                                ...form.getValues('aanpassingen'),
-                                zoolverstijvingLinks: !!checked,
-                              })
-                            }
-                          />
-                          <Label
-                            htmlFor="zoolverstijving-links"
-                            className="font-normal cursor-pointer"
-                          >
-                            {t('left')}
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="zoolverstijving-rechts"
-                            checked={
-                              form.watch('aanpassingen')
-                                ?.zoolverstijvingRechts || false
-                            }
-                            onCheckedChange={checked =>
-                              form.setValue('aanpassingen', {
-                                ...form.getValues('aanpassingen'),
-                                zoolverstijvingRechts: !!checked,
-                              })
-                            }
-                          />
-                          <Label
-                            htmlFor="zoolverstijving-rechts"
-                            className="font-normal cursor-pointer"
-                          >
-                            {t('right')}
-                          </Label>
-                        </div>
+                      <div className="grid gap-1.5 font-normal">
+                        <p className="text-sm leading-none font-medium">
+                          {t('left')}
+                        </p>
                       </div>
-                    </div>
+                    </Label>
+                  </FormItemWrapper>
 
-                    <Separator />
-
-                    {/* Hallux Valgus */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-semibold">
-                        {t('halluxValgus')}
-                      </Label>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="hallux-links"
-                            checked={
-                              form.watch('aanpassingen')?.halluxValgusLinks ||
-                              false
-                            }
-                            onCheckedChange={checked =>
-                              form.setValue('aanpassingen', {
-                                ...form.getValues('aanpassingen'),
-                                halluxValgusLinks: !!checked,
-                              })
-                            }
-                          />
-                          <Label
-                            htmlFor="hallux-links"
-                            className="font-normal cursor-pointer"
-                          >
-                            {t('left')}
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="hallux-rechts"
-                            checked={
-                              form.watch('aanpassingen')?.halluxValgusRechts ||
-                              false
-                            }
-                            onCheckedChange={checked =>
-                              form.setValue('aanpassingen', {
-                                ...form.getValues('aanpassingen'),
-                                halluxValgusRechts: !!checked,
-                              })
-                            }
-                          />
-                          <Label
-                            htmlFor="hallux-rechts"
-                            className="font-normal cursor-pointer"
-                          >
-                            {t('right')}
-                          </Label>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    {/* Verdieping Voorvoet */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-semibold">
-                        {t('forefootDeepening')}
-                      </Label>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="verdieping-links"
-                            checked={
-                              form.watch('aanpassingen')
-                                ?.verdiepingVoorvoetLinks || false
-                            }
-                            onCheckedChange={checked =>
-                              form.setValue('aanpassingen', {
-                                ...form.getValues('aanpassingen'),
-                                verdiepingVoorvoetLinks: !!checked,
-                              })
-                            }
-                          />
-                          <Label
-                            htmlFor="verdieping-links"
-                            className="font-normal cursor-pointer"
-                          >
-                            {t('left')}
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="verdieping-rechts"
-                            checked={
-                              form.watch('aanpassingen')
-                                ?.verdiepingVoorvoetRechts || false
-                            }
-                            onCheckedChange={checked =>
-                              form.setValue('aanpassingen', {
-                                ...form.getValues('aanpassingen'),
-                                verdiepingVoorvoetRechts: !!checked,
-                              })
-                            }
-                          />
-                          <Label
-                            htmlFor="verdieping-rechts"
-                            className="font-normal cursor-pointer"
-                          >
-                            {t('right')}
-                          </Label>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    {/* Supplement Individueel */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-semibold">
-                        {t('individualSupplement')}
-                      </Label>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="supplement-links"
-                            checked={
-                              form.watch('aanpassingen')
-                                ?.supplementIndividueelLinks || false
-                            }
-                            onCheckedChange={checked =>
-                              form.setValue('aanpassingen', {
-                                ...form.getValues('aanpassingen'),
-                                supplementIndividueelLinks: !!checked,
-                              })
-                            }
-                          />
-                          <Label
-                            htmlFor="supplement-links"
-                            className="font-normal cursor-pointer"
-                          >
-                            {t('left')}
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="supplement-rechts"
-                            checked={
-                              form.watch('aanpassingen')
-                                ?.supplementIndividueelRechts || false
-                            }
-                            onCheckedChange={checked =>
-                              form.setValue('aanpassingen', {
-                                ...form.getValues('aanpassingen'),
-                                supplementIndividueelRechts: !!checked,
-                              })
-                            }
-                          />
-                          <Label
-                            htmlFor="supplement-rechts"
-                            className="font-normal cursor-pointer"
-                          >
-                            {t('right')}
-                          </Label>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    {/* Afwikkelrol Eenvoudig */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-semibold">
-                        {t('simpleRockerBar')}
-                      </Label>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="afwikkelrol-eenvoudig-links"
-                            checked={
-                              form.watch('aanpassingen')
-                                ?.afwikkelrolEenvoudigLinks || false
-                            }
-                            onCheckedChange={checked =>
-                              form.setValue('aanpassingen', {
-                                ...form.getValues('aanpassingen'),
-                                afwikkelrolEenvoudigLinks: !!checked,
-                              })
-                            }
-                          />
-                          <Label
-                            htmlFor="afwikkelrol-eenvoudig-links"
-                            className="font-normal cursor-pointer"
-                          >
-                            {t('left')}
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="afwikkelrol-eenvoudig-rechts"
-                            checked={
-                              form.watch('aanpassingen')
-                                ?.afwikkelrolEenvoudigRechts || false
-                            }
-                            onCheckedChange={checked =>
-                              form.setValue('aanpassingen', {
-                                ...form.getValues('aanpassingen'),
-                                afwikkelrolEenvoudigRechts: !!checked,
-                              })
-                            }
-                          />
-                          <Label
-                            htmlFor="afwikkelrol-eenvoudig-rechts"
-                            className="font-normal cursor-pointer"
-                          >
-                            {t('right')}
-                          </Label>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    {/* Afwikkelrol Gecompliceerd */}
-                    <div className="space-y-3">
-                      <Label className="text-base font-semibold">
-                        {t('complexRockerBar')}
-                      </Label>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="afwikkelrol-gecompliceerd-links"
-                            checked={
-                              form.watch('aanpassingen')
-                                ?.afwikkelrolGecompliceerdLinks || false
-                            }
-                            onCheckedChange={checked =>
-                              form.setValue('aanpassingen', {
-                                ...form.getValues('aanpassingen'),
-                                afwikkelrolGecompliceerdLinks: !!checked,
-                              })
-                            }
-                          />
-                          <Label
-                            htmlFor="afwikkelrol-gecompliceerd-links"
-                            className="font-normal cursor-pointer"
-                          >
-                            {t('left')}
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="afwikkelrol-gecompliceerd-rechts"
-                            checked={
-                              form.watch('aanpassingen')
-                                ?.afwikkelrolGecompliceerdRechts || false
-                            }
-                            onCheckedChange={checked =>
-                              form.setValue('aanpassingen', {
-                                ...form.getValues('aanpassingen'),
-                                afwikkelrolGecompliceerdRechts: !!checked,
-                              })
-                            }
-                          />
-                          <Label
-                            htmlFor="afwikkelrol-gecompliceerd-rechts"
-                            className="font-normal cursor-pointer"
-                          >
-                            {t('right')}
-                          </Label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Steunzool (Insole) */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('supportInsole')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <Label>{t('insoleType')}</Label>
-                      <Select
-                        value={form.watch('steunzoolTypeGeneral') || ''}
-                        onValueChange={v =>
-                          form.setValue('steunzoolTypeGeneral', v)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('insoleType')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {STEUNZOOL_TYPE_OPTIES.map(opt => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {form.watch('steunzoolTypeGeneral') === 'Anders' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="steunzool-anders">
-                          {t('otherInsoleType')}
-                        </Label>
-                        <Textarea
-                          id="steunzool-anders"
-                          placeholder={t('otherInsoleTypePlaceholder')}
-                          value={form.watch('steunzoolAndersText')}
-                          onChange={e =>
-                            form.setValue('steunzoolAndersText', e.target.value)
-                          }
-                          rows={2}
-                          className="resize-none"
-                        />
-                      </div>
-                    )}
-
-                    <Separator />
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="correctie-middenvoet">
-                          {t('midfootCorrection')}
-                        </Label>
-                        <Input
-                          id="correctie-middenvoet"
-                          placeholder={t('midfootCorrection')}
-                          value={form.watch('steunzoolCorrectieMiddenvoet')}
-                          onChange={e =>
-                            form.setValue(
-                              'steunzoolCorrectieMiddenvoet',
-                              e.target.value,
-                            )
-                          }
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="correctie-voorvoet">
-                          {t('forefootCorrection')}
-                        </Label>
-                        <Input
-                          id="correctie-voorvoet"
-                          placeholder={t('forefootCorrection')}
-                          value={form.watch('steunzoolCorrectieVoorvoet')}
-                          onChange={e =>
-                            form.setValue(
-                              'steunzoolCorrectieVoorvoet',
-                              e.target.value,
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="vv-pellote">{t('forefootPad')}</Label>
-                      <Input
-                        id="vv-pellote"
-                        placeholder={t('forefootPad')}
-                        value={form.watch('steunzoolVvPellote')}
-                        onChange={e =>
-                          form.setValue('steunzoolVvPellote', e.target.value)
+                  <FormItemWrapper>
+                    <Label className="flex items-center space-x-2 rounded-md border bg-foreground/5 px-3 py-2 cursor-pointer hover:bg-accent/30 transition-colors">
+                      <Checkbox
+                        id="zoolverstijving-rechts"
+                        checked={!!form.watch('soleReinforcementRight')}
+                        onCheckedChange={checked =>
+                          form.setValue('soleReinforcementRight', !!checked)
                         }
                       />
-                    </div>
-
-                    <Separator />
-
-                    <div className="space-y-3">
-                      <Label className="text-base font-semibold">
-                        {t('heelRaise')}
-                      </Label>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="hak-verhoging-links">
-                            {t('left')} (cm)
-                          </Label>
-                          <Input
-                            id="hak-verhoging-links"
-                            type="number"
-                            step="0.1"
-                            placeholder={t('heelRaise')}
-                            value={form.watch('steunzoolHakVerhogingLinks')}
-                            onChange={e =>
-                              form.setValue(
-                                'steunzoolHakVerhogingLinks',
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="hak-verhoging-rechts">
-                            {t('right')} (cm)
-                          </Label>
-                          <Input
-                            id="hak-verhoging-rechts"
-                            type="number"
-                            step="0.1"
-                            placeholder={t('heelRaise')}
-                            value={form.watch('steunzoolHakVerhogingRechts')}
-                            onChange={e =>
-                              form.setValue(
-                                'steunzoolHakVerhogingRechts',
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
+                      <div className="grid gap-1.5 font-normal">
+                        <p className="text-sm leading-none font-medium">
+                          {t('right')}
+                        </p>
                       </div>
-                    </div>
+                    </Label>
+                  </FormItemWrapper>
+                </FormBlock>
+              </FormCard>
 
-                    <Separator />
+              {/* Afwikkelrol (onder schoen) */}
+              <FormCard
+                title={t('rockerSole')}
+                toggleAble={true}
+                toggleLabel={t('addRockerSole')}
+                toggleId="afwikkelrol-toggle"
+                defaultOpen={form.watch('afwikkelrolEnabled')}
+                onToggleChange={isOpen => {
+                  form.setValue('afwikkelrolEnabled', isOpen);
+                  if (!isOpen) {
+                    form.setValue('rockerRollCmLeft', '');
+                    form.setValue('rockerRollCmRight', '');
+                  }
+                }}
+              >
+                <FormBlock columns={2} dividers={true}>
+                  <FormItemWrapper label={t('leftCm')}>
+                    <Input
+                      id="afwikkelrol-cm-links"
+                      type="number"
+                      step="0.1"
+                      placeholder={t('cmPlaceholder')}
+                      value={form.watch('rockerRollCmLeft') || ''}
+                      onChange={e =>
+                        form.setValue('rockerRollCmLeft', e.target.value)
+                      }
+                      className="w-2/3"
+                    />
+                  </FormItemWrapper>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="steunzool-prijs">{t('insolePrice')}</Label>
-                        <Input
-                          id="steunzool-prijs"
-                          type="number"
-                          step="0.01"
-                          placeholder={t('insolePrice')}
-                          value={form.watch('steunzoolPrijs') || ''}
-                          onChange={e => {
-                            const value = e.target.value ? parseFloat(e.target.value) : undefined;
-                            form.setValue(
-                              'steunzoolPrijs',
-                              value !== undefined && !isNaN(value) ? value : undefined,
-                            );
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="steunzool-prijs-naam">
-                          {t('insolePriceName')}
-                        </Label>
-                        <Input
-                          id="steunzool-prijs-naam"
-                          placeholder={t('insolePriceName')}
-                          value={form.watch('steunzoolPrijsNaam')}
-                          onChange={e =>
-                            form.setValue('steunzoolPrijsNaam', e.target.value)
-                          }
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  <FormItemWrapper label={t('rightCm')}>
+                    <Input
+                      id="afwikkelrol-cm-rechts"
+                      type="number"
+                      step="0.1"
+                      placeholder={t('cmPlaceholder')}
+                      value={form.watch('rockerRollCmRight') || ''}
+                      onChange={e =>
+                        form.setValue('rockerRollCmRight', e.target.value)
+                      }
+                      className="w-2/3"
+                    />
+                  </FormItemWrapper>
+                </FormBlock>
+              </FormCard>
 
               {/* Special Notes */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('specialNotes')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    placeholder={t('specialNotesPlaceholder')}
-                    value={form.watch('bijzonderheden')}
-                    onChange={e =>
-                      form.setValue('bijzonderheden', e.target.value)
-                    }
-                    rows={5}
-                    className="resize-none"
-                  />
-                </CardContent>
-              </Card>
+              <FormCard title={t('specialNotes')}>
+                <Textarea
+                  placeholder={t('specialNotesPlaceholder')}
+                  value={form.watch('specialNotes')}
+                  onChange={e => form.setValue('specialNotes', e.target.value)}
+                  rows={5}
+                />
+              </FormCard>
 
               {/* Submit Section */}
               <FormFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleResetDraft}
+                >
+                  {t('reset')}
+                </Button>
                 <Button
                   type="button"
                   variant="outline"

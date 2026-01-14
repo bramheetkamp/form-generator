@@ -3,31 +3,24 @@ import {BaseLayout, FormSection, FormFooter} from '@/components/layout';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Textarea} from '@/components/ui/textarea';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import {Label} from '@/components/ui/label';
 import useTranslation from 'next-translate/useTranslation';
 import {useRouter} from 'next/router';
 import {Routes} from '@/lib/routes';
 import {
-  LOCATIE_OPTIES,
-  AANHEF_OPTIES,
-  BEHANDELAARS,
-  ZORGVERZEKERAARS,
-  Locatie,
-  Aanhef,
-} from '@/lib/constants/formConstants';
+  LOCATION_OPTIONS,
+  SALUTATION_OPTIONS,
+  PRACTITIONERS,
+  INSURANCE_COMPANIES,
+  Location,
+  Salutation,
+} from '@/domain/form/constants/formConstants';
 import {useAppDispatch} from '@/domain/store/hooks';
 import {setClientData} from '@/domain/store/slices/formData';
 import {ChevronRight} from 'lucide-react';
 import {DatePicker} from '@/components/ui/date-picker';
-import {ReactSelect} from '@/components/ui/react-select';
-import {useForm, Controller} from 'react-hook-form';
+import {useForm} from 'react-hook-form';
+import {useFormPersistence} from '@/hooks/useFormPersistence';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
 import {
@@ -35,13 +28,19 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {scrollToFirstError} from '@/utils/formHelpers';
-import { useFormPersistence } from '@/hooks/useFormPersistence';
 import {RadioGroup, RadioGroupItem} from '@/components/ui/radio-group';
-import {DutchAddressInput} from '@/components/ui/dutch-address-input';
+import {useDutchAddressLookup} from '@/components/ui/dutch-address-input';
+import {FormCard, FormBlock, FormItemWrapper} from '@/components/ui/form-block';
 
 const FormNewClientPage = () => {
   const router = useRouter();
@@ -56,16 +55,17 @@ const FormNewClientPage = () => {
     initials: z.string().min(1, {message: t('required')}),
     clientName: z.string().min(1, {message: t('required')}),
     birthDate: z.string().min(1, {message: t('required')}),
+    bsn: z.string().optional(),
     address: z.string().min(1, {message: t('required')}),
     houseNumber: z.string().min(1, {message: t('required')}),
     postalCode: z.string().min(1, {message: t('required')}),
     city: z.string().min(1, {message: t('required')}),
     email: z.string().min(1, {message: t('required')}),
     insurance: z.string().min(1, {message: t('required')}),
-    phoneOne: z.string().optional(),
+    phoneOne: z.string().min(1, {message: t('required')}),
     phoneTwo: z.string().optional(),
-    specialist: z.string().optional(),
-    medischeIndicatie: z.string().optional(),
+    specialist: z.string().min(1, {message: t('required')}),
+    medicalIndication: z.string().optional(),
   });
 
   type FormData = z.infer<typeof formSchema>;
@@ -81,6 +81,7 @@ const FormNewClientPage = () => {
       initials: '',
       clientName: '',
       birthDate: '',
+      bsn: '',
       address: '',
       houseNumber: '',
       postalCode: '',
@@ -90,19 +91,72 @@ const FormNewClientPage = () => {
       phoneOne: '',
       phoneTwo: '',
       specialist: '',
-      medischeIndicatie: '',
+      medicalIndication: '',
     },
   });
 
-  const onSubmit = (data: FormData) => {
-    clearStorage();
+  // Persist New Client form state across refreshes
+  const {clearStorage} = useFormPersistence(
+    'newClient',
+    form.watch,
+    form.setValue,
+  );
 
+  const handleResetDraft = () => {
+    clearStorage();
+    form.reset();
+  };
+
+  // Persist New Client form state across refreshes
+  useFormPersistence('newClient', form.watch, form.setValue);
+
+  // Address lookup logic using the custom hook
+  const {
+    loading: addressLoading,
+    error: addressError,
+    street,
+    city,
+    handlePostcodeBlur,
+    handleHouseNumberBlur,
+  } = useDutchAddressLookup({
+    postcode: form.watch('postalCode'),
+    houseNumber: form.watch('houseNumber'),
+    t,
+  });
+
+  // Auto-fill street and city when they change
+  React.useEffect(() => {
+    if (street) {
+      form.setValue('address', street, {shouldValidate: true});
+    }
+    // Only clear if street is empty and user has entered both fields
+    if (
+      !street &&
+      form.getValues('postalCode') &&
+      form.getValues('houseNumber')
+    ) {
+      form.setValue('address', '', {shouldValidate: true});
+    }
+  }, [street]);
+  React.useEffect(() => {
+    if (city) {
+      form.setValue('city', city, {shouldValidate: true});
+    }
+    if (
+      !city &&
+      form.getValues('postalCode') &&
+      form.getValues('houseNumber')
+    ) {
+      form.setValue('city', '', {shouldValidate: true});
+    }
+  }, [city]);
+  const onSubmit = (data: FormData) => {
     dispatch(
       setClientData({
         practitionerId: data.practitionerId,
         date: data.date,
-        location: data.location as Locatie,
-        salutation: data.salutation as Aanhef,
+        location: data.location as Location,
+        salutation: data.salutation as Salutation,
         initials: data.initials,
         clientName: data.clientName,
         birthDate: data.birthDate,
@@ -114,11 +168,12 @@ const FormNewClientPage = () => {
         phoneTwo: data.phoneTwo || '',
         email: data.email,
         insurance: data.insurance,
-        medischeIndicatie: data.medischeIndicatie || '',
+        medicalIndication: data.medicalIndication || '',
         specialist: data.specialist || '',
       }),
     );
-    router.push(Routes.form_selection);
+    clearStorage();
+    void router.push(Routes.form_selection);
   };
 
   return (
@@ -139,72 +194,84 @@ const FormNewClientPage = () => {
               onSubmit={form.handleSubmit(onSubmit, scrollToFirstError)}
               className="space-y-6"
             >
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('appointmentInformation')}</CardTitle>
-                  <CardDescription>
-                    {t('appointmentInformationDescription')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormCard
+                title={t('appointmentInformation')}
+                description={t('appointmentInformationDescription')}
+              >
+                <FormBlock
+                  columns={2}
+                  // dividers={true}
+                >
+                  {/* Practitioner */}
+                  <FormItemWrapper
+                    label={t('practitioner')}
+                    requiredLabel={true}
+                  >
                     <FormField
                       control={form.control}
                       name="practitionerId"
-                      render={({field}) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t('practitioner')}{' '}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
+                      render={({field, fieldState}) => (
+                        <FormItem className="w-2/3">
                           <FormControl>
-                            <ReactSelect
-                              value={
-                                field.value
-                                  ? {
-                                      label:
-                                        BEHANDELAARS.find(
-                                          p => p.value === field.value,
-                                        )?.label || '',
-                                      value: field.value,
-                                    }
-                                  : null
-                              }
-                              onChange={option => {
-                                if (option && 'value' in option) {
-                                  field.onChange(option.value);
-                                }
-                              }}
-                              options={BEHANDELAARS}
-                              placeholder={t('selectPractitioner')}
-                            />
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger
+                                className="w-full"
+                                aria-invalid={!!fieldState.error}
+                              >
+                                <SelectValue
+                                  placeholder={t('selectPractitioner')}
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {PRACTITIONERS.map(option => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                  </FormItemWrapper>
 
+                  {/* Measurement Date */}
+                  <FormItemWrapper
+                    label={t('measurementDate')}
+                    requiredLabel={true}
+                  >
                     <FormField
                       control={form.control}
                       name="date"
                       render={({field}) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t('measurementDate')}{' '}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
+                        <FormItem className="w-2/3">
                           <FormControl>
                             <DatePicker
                               value={
                                 field.value ? new Date(field.value) : undefined
                               }
-                              onChange={selectedDate =>
-                                field.onChange(
-                                  selectedDate
-                                    ? selectedDate.toISOString().split('T')[0]
-                                    : '',
-                                )
-                              }
+                              onChange={selectedDate => {
+                                if (selectedDate) {
+                                  const day = String(
+                                    selectedDate.getDate(),
+                                  ).padStart(2, '0');
+                                  const month = String(
+                                    selectedDate.getMonth() + 1,
+                                  ).padStart(2, '0');
+                                  const year = selectedDate.getFullYear();
+                                  field.onChange(`${day}-${month}-${year}`);
+                                } else {
+                                  field.onChange('');
+                                }
+                              }}
                               placeholder={t('selectDate')}
                               disabled={d => d > new Date()}
                               className="w-full"
@@ -214,74 +281,73 @@ const FormNewClientPage = () => {
                         </FormItem>
                       )}
                     />
-                  </div>
+                  </FormItemWrapper>
+                </FormBlock>
 
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({field}) => (
-                      <FormItem>
-                        <FormLabel>
-                          {t('location')}{' '}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            className="grid grid-cols-1 md:grid-cols-4 gap-4"
-                          >
-                            {LOCATIE_OPTIES.map(option => (
-                              <div
-                                key={option.value}
-                                className="flex items-center space-x-2"
+                <FormBlock>
+                  <FormItemWrapper label={t('location')} requiredLabel={true}>
+                    <FormField
+                      control={form.control}
+                      name="location"
+                      render={({field, fieldState}) => (
+                        <FormItem className="w-2/3">
+                          <FormControl>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger
+                                className="w-full"
+                                aria-invalid={!!fieldState.error}
                               >
-                                <RadioGroupItem
-                                  value={option.value}
-                                  id={`location-${option.value}`}
+                                <SelectValue
+                                  placeholder={t('selectLocation')}
                                 />
-                                <Label
-                                  htmlFor={`location-${option.value}`}
-                                  className="font-normal cursor-pointer"
-                                >
-                                  {option.label}
-                                </Label>
-                              </div>
-                            ))}
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {LOCATION_OPTIONS.map(option => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormItemWrapper>
+                </FormBlock>
+              </FormCard>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('personalInformation')}</CardTitle>
-                  <CardDescription>
-                    {t('personalInformationDescription')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Personal Information */}
+              <FormCard
+                title={t('personalInformation')}
+                description={t('personalInformationDescription')}
+              >
+                <FormBlock
+                  columns={3}
+                  // dividers={true}
+                >
+                  {/* Salutation */}
+                  <FormItemWrapper label={t('salutation')} requiredLabel={true}>
                     <FormField
                       control={form.control}
                       name="salutation"
-                      render={({field}) => (
+                      render={({field, fieldState}) => (
                         <FormItem>
-                          <FormLabel>
-                            {t('salutation')}{' '}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
                           <FormControl>
                             <RadioGroup
                               value={field.value}
                               onValueChange={field.onChange}
                               className="flex gap-4"
+                              aria-invalid={!!fieldState?.error}
                             >
-                              {AANHEF_OPTIES.map(option => (
+                              {SALUTATION_OPTIONS.map(option => (
                                 <div
                                   key={option.value}
                                   className="flex items-center space-x-2"
@@ -304,152 +370,248 @@ const FormNewClientPage = () => {
                         </FormItem>
                       )}
                     />
+                  </FormItemWrapper>
 
+                  {/* Initials */}
+                  <FormItemWrapper label={t('initials')} requiredLabel={true}>
                     <FormField
                       control={form.control}
                       name="initials"
                       render={({field}) => (
                         <FormItem>
-                          <FormLabel>
-                            {t('initials')}{' '}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
                           <FormControl>
                             <Input
                               {...field}
                               placeholder={t('initialsPlaceholder')}
+                              autoComplete="given-name"
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                  </FormItemWrapper>
 
+                  {/* Last Name */}
+                  <FormItemWrapper label={t('lastName')} requiredLabel={true}>
                     <FormField
                       control={form.control}
                       name="clientName"
                       render={({field}) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t('lastName')}{' '}
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
+                        <FormItem className="w-full">
                           <FormControl>
                             <Input
                               {...field}
                               placeholder={t('lastNamePlaceholder')}
+                              autoComplete="family-name"
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                  </FormItemWrapper>
+                </FormBlock>
+
+                <FormBlock columns={2}>
+                  {/* Birth Date */}
+                  <FormItemWrapper label={t('birthDate')} requiredLabel={true}>
+                    <FormField
+                      control={form.control}
+                      name="birthDate"
+                      render={({field}) => (
+                        <FormItem className="w-2/3">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder={t('selectBirthDate')}
+                              maxLength={10}
+                              autoComplete="bday"
+                              onChange={e => {
+                                let value = e.target.value.replace(/\D/g, '');
+                                if (value.length > 8) {
+                                  value = value.slice(0, 8);
+                                }
+                                let formatted = value;
+                                if (value.length > 4) {
+                                  formatted = `${value.slice(0, 2)}-${value.slice(2, 4)}-${value.slice(4)}`;
+                                } else if (value.length > 2) {
+                                  formatted = `${value.slice(0, 2)}-${value.slice(2)}`;
+                                }
+                                field.onChange(formatted);
+                              }}
+                              value={field.value}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormItemWrapper>
+
+                  {/* BSN Niet verplicht  */}
+                  <FormItemWrapper label={t('bsn')} requiredLabel={false}>
+                    <FormField
+                      control={form.control}
+                      name="bsn"
+                      render={({field}) => (
+                        <FormItem className="w-2/3">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder={t('bsnPlaceholder')}
+                              type="text"
+                              maxLength={9}
+                              onChange={e => {
+                                const value = e.target.value.replace(/\D/g, '');
+                                field.onChange(value);
+                              }}
+                              value={field.value}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormItemWrapper>
+                </FormBlock>
+              </FormCard>
+
+              {/* Address Information */}
+
+              <FormCard
+                title={t('addressInformation')}
+                description={t('addressInformationDescription')}
+              >
+                <FormBlock columns={2}>
+                  <FormItemWrapper label={t('postalCode')} requiredLabel={true}>
+                    <FormField
+                      control={form.control}
+                      name="postalCode"
+                      render={({field, fieldState}) => (
+                        <FormItem className="w-3/4">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              id="postcode"
+                              placeholder={t('postalCodePlaceholder')}
+                              autoComplete="postal-code"
+                              aria-invalid={
+                                !!fieldState.error || !!addressError
+                              }
+                              onBlur={e => {
+                                field.onBlur();
+                                handlePostcodeBlur();
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormItemWrapper>
+
+                  {/* House Number can be 304 but also 29-304 or 89-A*/}
+                  <FormItemWrapper
+                    label={t('houseNumber')}
+                    requiredLabel={true}
+                  >
+                    <FormField
+                      control={form.control}
+                      name="houseNumber"
+                      render={({field, fieldState}) => (
+                        <FormItem className="w-3/4">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              id="houseNumber"
+                              placeholder={t('houseNumberPlaceholder')}
+                              autoComplete="address-line2"
+                              aria-invalid={
+                                !!fieldState.error || !!addressError
+                              }
+                              onBlur={e => {
+                                field.onBlur();
+                                handleHouseNumberBlur();
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormItemWrapper>
+                  <FormItemWrapper label={t('streetName')} requiredLabel={true}>
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      render={({field}) => (
+                        <FormItem className="w-3/4">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              id="street"
+                              placeholder={t('autofill')}
+                              autoComplete="address-line1"
+                              readOnly
+                              tabIndex={-1}
+                              className="bg-muted cursor-default pointer-events-none"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormItemWrapper>
+                  <FormItemWrapper label={t('city')} requiredLabel={true}>
+                    <FormField
+                      control={form.control}
+                      name="city"
+                      render={({field}) => (
+                        <FormItem className="w-3/4">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              id="city"
+                              placeholder={t('autofill')}
+                              autoComplete="address-level2"
+                              readOnly
+                              tabIndex={-1}
+                              className="bg-muted cursor-default pointer-events-none"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormItemWrapper>
+                </FormBlock>
+                {/* Address lookup error and loading state */}
+                {(addressError || addressLoading) && (
+                  <div className="text-sm text-destructive mt-2 min-h-[1.5em]">
+                    {addressLoading ? t('addressLoadingMessage') : addressError}
                   </div>
+                )}
+              </FormCard>
 
-                  <FormField
-                    control={form.control}
-                    name="birthDate"
-                    render={({field}) => (
-                      <FormItem>
-                        <FormLabel>
-                          {t('birthDate')}{' '}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <DatePicker
-                            value={
-                              field.value ? new Date(field.value) : undefined
-                            }
-                            onChange={selectedDate =>
-                              field.onChange(
-                                selectedDate
-                                  ? selectedDate.toISOString().split('T')[0]
-                                  : '',
-                              )
-                            }
-                            placeholder={t('selectBirthDate')}
-                            disabled={d => d > new Date()}
-                            className="w-full"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('addressInformation')}</CardTitle>
-                  <CardDescription>
-                    {t('addressInformationDescription')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <Controller
-                    control={form.control}
-                    name="postalCode"
-                    render={({field: postalCodeField}) => (
-                      <Controller
-                        control={form.control}
-                        name="houseNumber"
-                        render={({field: houseNumberField}) => (
-                          <Controller
-                            control={form.control}
-                            name="address"
-                            render={({field: addressField}) => (
-                              <Controller
-                                control={form.control}
-                                name="city"
-                                render={({field: cityField}) => (
-                                  <DutchAddressInput
-                                    postcode={postalCodeField.value}
-                                    houseNumber={houseNumberField.value}
-                                    street={addressField.value}
-                                    city={cityField.value}
-                                    onPostcodeChange={postalCodeField.onChange}
-                                    onHouseNumberChange={
-                                      houseNumberField.onChange
-                                    }
-                                    onStreetChange={addressField.onChange}
-                                    onCityChange={cityField.onChange}
-                                    postcodeLabel={t('postalCode')}
-                                    houseNumberLabel={t('houseNumber')}
-                                    streetLabel={t('streetName')}
-                                    cityLabel={t('city')}
-                                    t={t}
-                                  />
-                                )}
-                              />
-                            )}
-                          />
-                        )}
-                      />
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('contactInformation')}</CardTitle>
-                  <CardDescription>
-                    {t('contactInformationDescription')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Contact Information */}
+              <FormCard
+                title={t('contactInformation')}
+                description={t('contactInformationDescription')}
+              >
+                {/* Phone Numbers */}
+                <FormBlock columns={2}>
+                  <FormItemWrapper label={t('phoneOne')} requiredLabel={true}>
                     <FormField
                       control={form.control}
                       name="phoneOne"
                       render={({field}) => (
-                        <FormItem>
-                          <FormLabel>{t('phoneOne')}</FormLabel>
+                        <FormItem className="w-2/3">
                           <FormControl>
                             <Input
                               {...field}
                               type="tel"
+                              autoComplete="tel"
                               placeholder={t('phoneOnePlaceholder')}
                             />
                           </FormControl>
@@ -457,17 +619,18 @@ const FormNewClientPage = () => {
                         </FormItem>
                       )}
                     />
-
+                  </FormItemWrapper>
+                  <FormItemWrapper label={t('phoneTwo')} requiredLabel={false}>
                     <FormField
                       control={form.control}
                       name="phoneTwo"
                       render={({field}) => (
-                        <FormItem>
-                          <FormLabel>{t('phoneTwo')}</FormLabel>
+                        <FormItem className="w-2/3">
                           <FormControl>
                             <Input
                               {...field}
                               type="tel"
+                              autoComplete="tel"
                               placeholder={t('phoneTwoPlaceholder')}
                             />
                           </FormControl>
@@ -475,108 +638,135 @@ const FormNewClientPage = () => {
                         </FormItem>
                       )}
                     />
-                  </div>
+                  </FormItemWrapper>
+                </FormBlock>
 
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({field}) => (
-                      <FormItem>
-                        <FormLabel>
-                          {t('email')}{' '}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="email"
-                            placeholder={t('emailPlaceholder')}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+                {/* Email */}
+                <FormBlock columns={1}>
+                  <FormItemWrapper label={t('email')} requiredLabel={true}>
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({field}) => (
+                        <FormItem className="w-2/3">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="email"
+                              autoComplete="email"
+                              placeholder={t('emailPlaceholder')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormItemWrapper>
+                </FormBlock>
+              </FormCard>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('insuranceAndMedical')}</CardTitle>
-                  <CardDescription>
-                    {t('insuranceAndMedicalDescription')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="insurance"
-                    render={({field}) => (
-                      <FormItem>
-                        <FormLabel>
-                          {t('insurance')}{' '}
-                          <span className="text-destructive">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <ReactSelect
-                            value={
-                              field.value
-                                ? {label: field.value, value: field.value}
-                                : null
-                            }
-                            onChange={option => {
-                              if (option && 'value' in option) {
-                                field.onChange(option.value || '');
-                              }
-                            }}
-                            options={ZORGVERZEKERAARS}
-                            placeholder={t('selectInsurance')}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              {/* Insurance and Medical Information */}
+              <FormCard
+                title={t('insuranceAndMedical')}
+                description={t('insuranceAndMedicalDescription')}
+              >
+                <FormBlock>
+                  {/* Insurance */}
+                  <FormItemWrapper label={t('insurance')} requiredLabel={true}>
+                    <FormField
+                      control={form.control}
+                      name="insurance"
+                      render={({field, fieldState}) => (
+                        <FormItem className="w-full">
+                          <FormControl>
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger
+                                className="w-full"
+                                aria-invalid={!!fieldState.error}
+                              >
+                                <SelectValue
+                                  placeholder={t('selectInsurance')}
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {INSURANCE_COMPANIES.map(option => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormItemWrapper>
 
-                  <FormField
-                    control={form.control}
-                    name="specialist"
-                    render={({field}) => (
-                      <FormItem>
-                        <FormLabel>{t('specialist')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder={t('specialistPlaceholder')}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* Specialist */}
+                  <FormItemWrapper
+                    label={t('specialist')}
+                    requiredLabel={true}
+                    className="w-full"
+                  >
+                    <FormField
+                      control={form.control}
+                      name="specialist"
+                      render={({field}) => (
+                        <FormItem className="w-full">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder={t('specialistPlaceholder')}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormItemWrapper>
 
-                  <FormField
-                    control={form.control}
-                    name="medischeIndicatie"
-                    render={({field}) => (
-                      <FormItem>
-                        <FormLabel>{t('medicalIndication')}</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder={t('medicalIndicationPlaceholder')}
-                            rows={4}
-                            className="resize-none"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+                  {/* Medical Indication */}
+                  <FormItemWrapper
+                    label={t('medicalIndication')}
+                    requiredLabel={false}
+                    className="w-full"
+                  >
+                    <FormField
+                      control={form.control}
+                      name="medicalIndication"
+                      render={({field}) => (
+                        <FormItem className="w-full">
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              placeholder={t('medicalIndicationPlaceholder')}
+                              rows={4}
+                              className="resize-none"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </FormItemWrapper>
+                </FormBlock>
+              </FormCard>
 
               <FormFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleResetDraft}
+                >
+                  {t('reset')}
+                </Button>
                 <Button
                   type="button"
                   variant="outline"

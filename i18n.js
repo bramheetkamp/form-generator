@@ -36,6 +36,7 @@ module.exports = {
 
     // Overview
     '/': ['form'],
+    '/help': ['form'],
 
     // Forms
     '/new-client': ['form'],
