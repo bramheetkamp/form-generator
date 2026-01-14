@@ -1,5 +1,9 @@
 // Type definities voor cliënt en intake formulier data
-import type {Location, Salutation, Side} from '@/lib/constants/formConstants';
+import type {
+  Location,
+  Salutation,
+  Side,
+} from '@/domain/form/constants/formConstants';
 
 export interface ClientData {
   // Practitioner and date

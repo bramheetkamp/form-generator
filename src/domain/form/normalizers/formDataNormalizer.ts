@@ -1,7 +1,7 @@
 // Utility to normalize form data and ensure all fields are exported to JSON
 // This ensures Word document placeholders like ${enclosureRightCm} are always replaced
 
-import {ENCLOSURE_OPTIONS} from '@/lib/constants/formConstants';
+import {ENCLOSURE_OPTIONS} from '@/domain/form/constants/formConstants';
 import type {
   IntakeVLOSData,
   IntakeOSAData,
@@ -12,7 +12,7 @@ import type {
   IntakeInsolesData,
   ClientData,
   CheckFoliepasData,
-} from '@/components/form/types/formData';
+} from '@/domain/form/types/formData';
 
 /**
  * Helper to normalize boolean/string values for export

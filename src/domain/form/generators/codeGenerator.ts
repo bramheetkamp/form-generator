@@ -60,9 +60,9 @@ import {
   IntakeOSAData,
   IntakeOSBData,
   IntakeOVACData,
-} from '@/components/form/types/formData';
+} from '@/domain/form/types/formData';
 
-import {OVAC_DESCRIPTION_ITEMS} from '@/lib/constants/formConstants';
+import {OVAC_DESCRIPTION_ITEMS} from '@/domain/form/constants/formConstants';
 
 export interface GeneratedCodes {
   code01: boolean;
